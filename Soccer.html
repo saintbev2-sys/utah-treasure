@@ -2,129 +2,102 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soccer Pro - Upgraded Edition</title>
+    <title>Stickman Soccer Pro</title>
     <style>
         body { background: #111; color: #fff; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
-        #scoreboard { background: rgba(0,0,0,0.5); padding: 10px; margin: 0; font-size: 1.2rem; }
-        canvas { background: #2e7d32; border: 4px solid #fff; display: block; margin: 5px auto; width: 90vw; height: 50vh; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; max-width: 320px; margin: 0 auto; }
-        button { padding: 18px; font-size: 1.2rem; background: #333; color: #fff; border: 2px solid #4caf50; border-radius: 12px; touch-action: manipulation; }
-        #kick { grid-column: span 2; background: #2e7d32; border-color: #fff; font-weight: bold; }
-        #sprint { background: #d32f2f; border-color: #ffc107; font-size: 0.8rem; }
+        canvas { background: #2e7d32; border: 4px solid #fff; display: block; margin: 10px auto; width: 90vw; height: 55vh; box-shadow: 0 0 20px rgba(0,0,0,0.5); touch-action: none; }
+        .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; max-width: 340px; margin: 0 auto; }
+        button { padding: 20px; font-size: 1.2rem; background: #333; color: #fff; border: 2px solid #4caf50; border-radius: 12px; touch-action: manipulation; -webkit-user-select: none; }
+        #kick { grid-column: span 3; background: #2e7d32; border-color: #fff; font-weight: bold; }
         #winScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; padding-top: 20%; }
     </style>
 </head>
 <body>
-    <div id="scoreboard">
-        SCORE: <span id="pScore">0</span> | BEST: <span id="highScore">0</span>
-    </div>
+    <div style="padding: 10px;">SCORE: <span id="pScore">0</span></div>
     <canvas id="game" width="400" height="600"></canvas>
     
     <div class="controls">
         <button id="left">◀</button>
         <button id="up">▲</button>
         <button id="right">▶</button>
-        <button id="sprint">SPRINT</button>
-        <button id="kick">KICK BOLDLY</button>
+        <button id="kick">KICK THE BALL</button>
     </div>
 
     <div id="winScreen">
         <h1 style="color: #ffd700;">GOAL!</h1>
-        <p id="clueText">The next clue is waiting...</p>
-        <button onclick="resetGame()">Continue Playing</button>
+        <p>The next clue is: <b>"Look where the shadow points at sunrise."</b></p>
+        <button onclick="resetGame()">Play Again</button>
     </div>
 
     <script>
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         const winScreen = document.getElementById('winScreen');
-        const highScoreEl = document.getElementById('highScore');
 
         let pScore = 0;
-        let highScore = localStorage.getItem('soccerHighScore') || 0;
-        highScoreEl.innerText = highScore;
+        let player = { x: 180, y: 500, speed: 15, anim: 0 };
+        let cpu = { x: 180, y: 100, speed: 2 };
+        let ball = { x: 200, y: 300, r: 12, dx: 0, dy: 0 };
 
-        let player = { x: 180, y: 500, w: 40, h: 60, baseSpeed: 10, sprintSpeed: 25 };
-        let cpu = { x: 180, y: 50, w: 40, h: 60, speed: 1.5 };
-        let ball = { x: 200, y: 300, r: 15, dx: 0, dy: 0 };
-
-        // Input Handling
-        const keys = { L: false, R: false, U: false, S: false };
+        const keys = { L: false, R: false, U: false };
         const bind = (id, k) => {
             const el = document.getElementById(id);
             el.onpointerdown = (e) => { e.preventDefault(); keys[k] = true; };
             el.onpointerup = () => keys[k] = false;
         };
-        bind('left', 'L'); bind('right', 'R'); bind('up', 'U'); bind('sprint', 'S');
+        bind('left', 'L'); bind('right', 'R'); bind('up', 'U');
 
         document.getElementById('kick').onclick = () => {
-            if (Math.abs(player.y - ball.y) < 70 && Math.abs(player.x - ball.x) < 50) {
-                ball.dy = -18;
-                ball.dx = (ball.x - player.x) * 0.2;
+            if (Math.abs(player.y - ball.y) < 60 && Math.abs(player.x - ball.x) < 40) {
+                ball.dy = -20;
+                ball.dx = (ball.x - player.x) * 0.3;
             }
         };
 
+        function drawStickman(x, y, color, isPlayer) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            // Head
+            ctx.arc(x + 20, y, 10, 0, Math.PI * 2);
+            // Body
+            ctx.moveTo(x + 20, y + 10); ctx.lineTo(x + 20, y + 40);
+            // Arms
+            let armSwing = Math.sin(player.anim) * 10;
+            ctx.moveTo(x + 20, y + 20); ctx.lineTo(x + 5 + armSwing, y + 35);
+            ctx.moveTo(x + 20, y + 20); ctx.lineTo(x + 35 - armSwing, y + 35);
+            // Legs
+            let legSwing = isPlayer ? Math.sin(player.anim) * 15 : 0;
+            ctx.moveTo(x + 20, y + 40); ctx.lineTo(x + 10 - legSwing, y + 60);
+            ctx.moveTo(x + 20, y + 40); ctx.lineTo(x + 30 + legSwing, y + 60);
+            ctx.stroke();
+        }
+
         function update() {
-            let currentSpeed = keys.S ? player.sprintSpeed : player.baseSpeed;
-            if (keys.L && player.x > 0) player.x -= currentSpeed;
-            if (keys.R && player.x < 360) player.x += currentSpeed;
-            if (keys.U && player.y > 100) player.y -= currentSpeed;
+            if (keys.L && player.x > 0) { player.x -= player.speed; player.anim += 0.2; }
+            if (keys.R && player.x < 360) { player.x += player.speed; player.anim += 0.2; }
+            if (keys.U && player.y > 100) { player.y -= player.speed; player.anim += 0.2; }
             if (!keys.U && player.y < 500) player.y += 8;
 
-            // Simple CPU logic
-            if (ball.y < 300) {
-                if (cpu.x + 20 < ball.x) cpu.x += cpu.speed;
-                else cpu.x -= cpu.speed;
-            }
-
-            // Ball Physics
             ball.x += ball.dx; ball.y += ball.dy;
-            ball.dx *= 0.98; ball.dy *= 0.98; // Friction
+            ball.dx *= 0.98; ball.dy *= 0.98;
             if (ball.x < 15 || ball.x > 385) ball.dx *= -1;
             
-            // Goal Logic
-            if (ball.y < 50 && ball.x > 100 && ball.x < 300) {
-                pScore++;
-                document.getElementById('pScore').innerText = pScore;
-                if (pScore > highScore) {
-                    highScore = pScore;
-                    localStorage.setItem('soccerHighScore', highScore);
-                    highScoreEl.innerText = highScore;
-                }
-                win();
-            }
-
-            if (ball.y < 0 || ball.y > 600) resetBall();
+            if (ball.y < 50 && ball.x > 100 && ball.x < 300) { pScore++; win(); }
+            if (ball.y < 0 || ball.y > 600) { ball.x = 200; ball.y = 300; ball.dy = 0; ball.dx = 0; }
 
             draw();
             requestAnimationFrame(update);
         }
 
-        function win() { 
-            winScreen.style.display = 'block';
-            document.getElementById('clueText').innerText = pScore === 1 ? 
-                'The next clue is: "Look where the shadow points at sunrise."' : 'Keep going for the high score!';
-        }
-
-        function resetGame() { winScreen.style.display = 'none'; resetBall(); }
-        function resetBall() { ball = { x: 200, y: 300, r: 15, dx: 0, dy: 0 }; }
+        function win() { winScreen.style.display = 'block'; document.getElementById('pScore').innerText = pScore; }
+        function resetGame() { winScreen.style.display = 'none'; ball.y = 300; ball.dy = 0; }
 
         function draw() {
             ctx.clearRect(0, 0, 400, 600);
-            // Grass stripes
-            ctx.fillStyle = "#27632a";
-            for(let i=0; i<600; i+=100) ctx.fillRect(0, i, 400, 50);
-            
-            // Goals and Markings
-            ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 3;
-            ctx.strokeRect(100, -10, 200, 60); // Top goal
-            ctx.beginPath(); ctx.arc(200, 300, 60, 0, Math.PI*2); ctx.stroke(); // Center circle
-
-            // Players
-            ctx.fillStyle = "#2979ff"; ctx.fillRect(player.x, player.y, player.w, player.h); // Player
-            ctx.fillStyle = "#f44336"; ctx.fillRect(cpu.x, cpu.y, cpu.w, cpu.h); // CPU
-            
-            // Ball
+            ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.strokeRect(100, -10, 200, 60);
+            drawStickman(player.x, player.y, "#2979ff", true);
+            drawStickman(cpu.x, cpu.y, "#f44336", false);
             ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
         }
         update();
