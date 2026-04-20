@@ -1,73 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Soccer Boss Game - Easy Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soccer Boss - Instant Win</title>
     <style>
-        body { background: #000; color: yellow; text-align: center; font-family: sans-serif; }
-        canvas { background: green; border: 5px solid #fff; display: block; margin: 20px auto; touch-action: none; }
-        .controls { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
-        button { padding: 15px 25px; font-size: 18px; background: #222; color: #fff; border: 2px solid green; border-radius: 8px; }
+        body { background: #000; color: #fff; text-align: center; font-family: sans-serif; margin: 0; overflow: hidden; }
+        canvas { background: #228B22; border: 4px solid #fff; display: block; margin: 10px auto; touch-action: none; width: 90vw; height: 60vh; }
+        .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; max-width: 300px; margin: 0 auto; }
+        button { padding: 20px; font-size: 20px; background: #333; color: #fff; border: 2px solid #0f0; border-radius: 12px; -webkit-user-select: none; }
+        #kick { grid-column: span 3; background: #060; border-color: #fff; }
+        #winScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10; padding-top: 100px; }
     </style>
 </head>
 <body>
-    <h2>YOU: <span id="pScore">0</span> | CPU: <span id="cScore">0</span></h2>
+    <h2 id="scoreboard">YOU: 0 | CPU: 0</h2>
     <canvas id="game" width="400" height="600"></canvas>
     
     <div class="controls">
-        <button onmousedown="move('L')" onmouseup="stop()">◀</button>
-        <button onmousedown="move('R')" onmouseup="stop()">▶</button>
-        <button onmousedown="move('U')" onmouseup="stop()">▲</button>
-        <button onclick="kick()">KICK</button>
+        <button id="left">◀</button>
+        <button id="up">▲</button>
+        <button id="right">▶</button>
+        <button id="kick">KICK BOLDLY</button>
+    </div>
+
+    <div id="winScreen">
+        <h1 style="color: gold;">GOAL! YOU WIN!</h1>
+        <p>The next clue is: <b>"Look where the shadow points at sunrise."</b></p>
+        <button onclick="location.reload()">Play Again</button>
     </div>
 
     <script>
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
+        const winScreen = document.getElementById('winScreen');
 
-        // --- HACKED SETTINGS ---
-        let player = { x: 180, y: 500, w: 40, h: 60, speed: 15 }; // Fast player
-        let cpu = { x: 180, y: 50, w: 40, h: 60, speed: 1 };      // Very slow CPU
+        let player = { x: 180, y: 500, w: 40, h: 60, speed: 20 };
+        let cpu = { x: 180, y: 50, w: 40, h: 60, speed: 0.5 }; // CPU barely moves
         let ball = { x: 200, y: 300, r: 15, dx: 0, dy: 0 };
-        let winScore = 1; // Change this to 1 so you win instantly after scoring
-        // -----------------------
+        let pScore = 0;
 
-        let pScore = 0, cScore = 0, dir = null;
-
-        function move(d) { dir = d; }
-        function stop() { dir = null; }
-        function kick() { if(Math.abs(player.y - ball.y) < 50) ball.dy = -10; }
+        // iPhone Touch Controls
+        const keys = { L: false, R: false, U: false };
+        const bind = (id, k) => {
+            const btn = document.getElementById(id);
+            btn.onpointerdown = () => keys[k] = true;
+            btn.onpointerup = () => keys[k] = false;
+        };
+        bind('left', 'L'); bind('right', 'R'); bind('up', 'U');
+        document.getElementById('kick').onclick = () => {
+            if (Math.abs(player.y - ball.y) < 70) { ball.dy = -15; ball.dx = (Math.random() - 0.5) * 4; }
+        };
 
         function update() {
-            if (dir === 'L' && player.x > 0) player.x -= player.speed;
-            if (dir === 'R' && player.x < 360) player.x += player.speed;
-            if (dir === 'U' && player.y > 300) player.y -= player.speed;
-            else if (player.y < 500) player.y += 5;
+            if (keys.L && player.x > 0) player.x -= player.speed;
+            if (keys.R && player.x < 360) player.x += player.speed;
+            if (keys.U && player.y > 100) player.y -= player.speed;
+            if (!keys.U && player.y < 500) player.y += 10;
 
-            // Ball Physics
             ball.x += ball.dx; ball.y += ball.dy;
             if (ball.x < 15 || ball.x > 385) ball.dx *= -1;
-            
-            // Scoring
-            if (ball.y < 0) { pScore++; reset(); }
-            if (ball.y > 600) { cScore++; reset(); }
-            
-            document.getElementById('pScore').innerText = pScore;
-            if (pScore >= winScore) alert("GOAL! YOU WIN! Check the console for your next clue.");
-            
+            if (ball.y < 50 && ball.x > 100 && ball.x < 300) { pScore++; win(); }
+            if (ball.y < 0 || ball.y > 600) { ball.x = 200; ball.y = 300; ball.dy = 0; ball.dx = 0; }
+
             draw();
             requestAnimationFrame(update);
         }
 
-        function reset() { ball = { x: 200, y: 300, r: 15, dx: 0, dy: 0 }; }
+        function win() { winScreen.style.display = 'block'; }
 
         function draw() {
             ctx.clearRect(0, 0, 400, 600);
-            ctx.strokeStyle = "#fff"; ctx.strokeRect(100, 0, 200, 50); // Goals
+            ctx.strokeStyle = "#fff"; ctx.lineWidth = 5; ctx.strokeRect(100, -10, 200, 60);
             ctx.fillStyle = "blue"; ctx.fillRect(player.x, player.y, player.w, player.h);
             ctx.fillStyle = "red"; ctx.fillRect(cpu.x, cpu.y, cpu.w, cpu.h);
             ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
         }
-
         update();
     </script>
 </body>
