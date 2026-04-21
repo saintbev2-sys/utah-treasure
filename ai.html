@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Mini AI - Your Personal Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #0a0a2a;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            border: 1px solid cyan;
+            box-shadow: 0 0 30px rgba(0,255,255,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+        .header {
+            background: #111;
+            padding: 18px;
+            text-align: center;
+            border-bottom: 1px solid cyan;
+        }
+        .header h1 {
+            color: cyan;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+        }
+        .header p {
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 24px;
+            font-size: 1rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .user {
+            background: #2a6f8f;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .ai {
+            background: #1a1a3a;
+            color: #0ff;
+            border: 1px solid #0ff;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .input-area {
+            display: flex;
+            padding: 12px;
+            background: #111;
+            border-top: 1px solid cyan;
+            gap: 8px;
+        }
+        input {
+            flex: 1;
+            background: #222;
+            border: 1px solid cyan;
+            border-radius: 30px;
+            padding: 12px 18px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+        button {
+            background: cyan;
+            border: none;
+            border-radius: 30px;
+            padding: 0 20px;
+            font-weight: bold;
+            color: black;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        button:active {
+            transform: scale(0.96);
+            background: #0aa;
+        }
+        .typing {
+            font-style: italic;
+            color: #88f;
+        }
+        @media (max-width: 500px) {
+            .message { max-width: 90%; font-size: 0.9rem; }
+            .header h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="header">
+        <h1>⚡ MINI AI</h1>
+        <p>Your offline assistant | learns from you</p>
+    </div>
+    <div class="messages" id="messages">
+        <div class="message ai">👋 Hi! I'm your personal AI. Ask me anything, or teach me new things!<br>Try: "hello", "your name", "weather", "joke", or "learn: ..."</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+        <button id="sendBtn">Send</button>
+    </div>
+</div>
+
+<script>
+    // ======================== CUSTOM KNOWLEDGE BASE ========================
+    // You can add any key-value pairs. The AI will use these to answer.
+    let knowledge = {
+        "hello": "Hey there! Ready to chat? ✨",
+        "hi": "Hi! How can I help you today?",
+        "how are you": "I'm just code, but I'm feeling electric! ⚡",
+        "your name": "I'm Mini AI, your friendly offline assistant.",
+        "who made you": "A cool person on GitHub built me with HTML, CSS, and JS!",
+        "weather": "I don't have live weather, but I bet it's nice wherever you are ☀️",
+        "joke": "Why do programmers prefer dark mode? Because light attracts bugs! 😆",
+        "love": "Love is like a neural network – it learns and grows 💖",
+        "bye": "See you later! Keep coding! 👋",
+        "thanks": "You're welcome! 😊",
+        "help": "I respond to keywords. Also type 'learn: question | answer' to teach me!"
+    };
+
+    // Helper: fuzzy match (simple lowercase includes)
+    function getBestResponse(userMsg) {
+        let lower = userMsg.toLowerCase();
+        // Check for exact matches first
+        for (let [key, value] of Object.entries(knowledge)) {
+            if (lower.includes(key)) {
+                return value;
+            }
+        }
+        // Default responses if no match
+        let defaults = [
+            "Hmm, I don't know that yet. You can teach me by typing: `learn: your question | my answer`",
+            "Interesting! I'm still learning. Want to teach me something new?",
+            "I'm just a mini AI, but I'm listening. Try asking something else!",
+            "Not sure about that. Maybe you can teach me using 'learn: question | answer'"
+        ];
+        return defaults[Math.floor(Math.random() * defaults.length)];
+    }
+
+    // Learning function
+    function learnFromCommand(text) {
+        // Format: learn: question | answer
+        let match = text.match(/learn:\s*(.+?)\s*\|\s*(.+)/i);
+        if (match) {
+            let question = match[1].trim().toLowerCase();
+            let answer = match[2].trim();
+            if (question && answer) {
+                knowledge[question] = answer;
+                return `✅ I've learned: "${question}" → "${answer}"`;
+            }
+        }
+        return null;
+    }
+
+    // Display messages
+    const messagesDiv = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', sender);
+        msgDiv.textContent = text;
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.classList.add('message', 'ai', 'typing');
+        typingDiv.id = 'typingIndicator';
+        typingDiv.textContent = '...';
+        messagesDiv.appendChild(typingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+        const typing = document.getElementById('typingIndicator');
+        if (typing) typing.remove();
+    }
+
+    async function handleUserMessage() {
+        let userText = userInput.value.trim();
+        if (userText === "") return;
+        addMessage(userText, 'user');
+        userInput.value = '';
+        
+        // Simulate thinking delay (more realistic)
+        showTypingIndicator();
+        await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 300));
+        
+        let reply = "";
+        // Check if it's a learning command
+        let learnResult = learnFromCommand(userText);
+        if (learnResult) {
+            reply = learnResult;
+        } else {
+            reply = getBestResponse(userText);
+        }
+        
+        removeTypingIndicator();
+        addMessage(reply, 'ai');
+    }
+
+    sendBtn.addEventListener('click', handleUserMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleUserMessage();
+    });
+    
+    // Optional: initial focus
+    userInput.focus();
+</script>
+</body>
+</html>
