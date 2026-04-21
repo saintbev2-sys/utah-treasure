@@ -1,22 +1,21 @@
 <!DOCTYPE html>
-<html><head><meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=no'><title>Gold Doom - Multi-Level</title><style>
-*{margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:none}
+<html><head><meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover'><title>Gold Doom - Hidden Items</title><style>
+*{margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 body{background:#000;overflow:hidden;font-family:Arial}
 #hud{display:flex;justify-content:space-around;align-items:center;background:#111;padding:6px;border-bottom:2px solid #f00;flex-wrap:wrap}
 #hud span{color:#ff0;font-size:15px;font-weight:bold}
 .title{color:#f00!important;font-size:19px!important}
-canvas{display:block}
-#btns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:4px;padding:6px;background:#111;border-top:2px solid #f00}
-#btns button{background:#1a0000;color:#ff0;border:1px solid #f00;border-radius:8px;padding:14px;font-size:18px;font-weight:bold;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100%;height:auto}
+#btns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:4px;padding:6px;background:#111;border-top:2px solid #f00}
+#btns button{background:#1a0000;color:#ff0;border:1px solid #f00;border-radius:8px;padding:14px;font-size:18px;font-weight:bold;touch-action:manipulation}
 #fire{background:#8b0000!important;border-color:#ff0!important}
-#leaderboardPanel{position:absolute;top:60px;right:10px;background:rgba(0,0,0,0.85);border:2px solid #f00;border-radius:8px;padding:8px 12px;color:#ff0;font-size:12px;width:140px;backdrop-filter:blur(4px);z-index:10}
-#leaderboardPanel h3{font-size:14px;margin-bottom:5px;text-align:center}
-#leaderboardPanel ol{margin-left:20px}
-#leaderboardPanel li{font-size:11px;margin:2px 0}
+#reloadBtn{background:#333!important;border-color:#ff0!important}
+#leaderboardPanel{position:absolute;top:60px;right:10px;background:rgba(0,0,0,0.85);border:2px solid #f00;border-radius:8px;padding:8px 12px;color:#ff0;font-size:12px;width:140px;backdrop-filter:blur(4px);z-index:10;pointer-events:none}
+#leaderboardPanel ol{pointer-events:auto}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;justify-content:center;align-items:center;z-index:100;flex-direction:column}
 .modal div{background:#222;border:3px solid #f00;border-radius:20px;padding:20px;text-align:center;color:#ff0;width:250px}
 .modal input{padding:10px;margin:15px 0;width:80%;font-size:16px;border-radius:8px}
-.modal button{padding:8px 16px;background:#8b0000;color:#fff;border:none;border-radius:8px;font-weight:bold}
+.modal button{padding:8px 16px;background:#8b0000;color:#fff;border:none;border-radius:8px;font-weight:bold;margin:5px}
 </style></head>
 <body>
 <div id=hud>
@@ -25,19 +24,21 @@ canvas{display:block}
   <span>🔫 <span id=am>50</span></span>
   <span>⭐ <span id=score>0</span></span>
   <span>📀 Lv <span id=level>1</span></span>
+  <span>💥 <span id=damage>1x</span></span>
 </div>
 <canvas id=c></canvas>
 <div id=btns>
   <button id=bl>◀</button><button id=bf>▲</button>
   <button id=bb>▼</button><button id=br>▶</button>
   <button id=fire>FIRE</button>
+  <button id=reloadBtn>📦 RELOAD</button>
 </div>
 <div id=leaderboardPanel><h3>🏆 TOP DEMON SLAYERS</h3><ol id=leaderList></ol></div>
 
 <script>
-// ===================== LEVEL DEFINITIONS =====================
+// ===================== LEVELS (with hidden item positions) =====================
 const LEVELS = [
-  { // Level 1 - original map
+  { // Level 1
     map: [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -58,9 +59,14 @@ const LEVELS = [
       {x:3,y:10,hp:3,dead:false},{x:11,y:9,hp:3,dead:false},
       {x:7,y:6,hp:3,dead:false}
     ],
+    items: [
+      {x:4.5, y:4.5, type:'ammo', collected:false},
+      {x:12.5, y:7.5, type:'ammo', collected:false},
+      {x:9.5, y:1.5, type:'weapon', collected:false}  // hidden golden gun
+    ],
     startX:1.5, startY:1.5
   },
-  { // Level 2 - tighter corridors
+  { // Level 2
     map: [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
@@ -81,9 +87,14 @@ const LEVELS = [
       {x:5,y:8,hp:3,dead:false},{x:10,y:9,hp:3,dead:false},
       {x:8,y:5,hp:5,dead:false},{x:13,y:11,hp:3,dead:false}
     ],
+    items: [
+      {x:6.5, y:3.5, type:'ammo', collected:false},
+      {x:9.5, y:10.5, type:'ammo', collected:false},
+      {x:2.5, y:5.5, type:'weapon', collected:false}
+    ],
     startX:1.5, startY:1.5
   },
-  { // Level 3 - boss room
+  { // Level 3
     map: [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -104,6 +115,11 @@ const LEVELS = [
       {x:7,y:7,hp:6,dead:false},{x:8,y:7,hp:8,dead:false},
       {x:12,y:2,hp:4,dead:false},{x:3,y:10,hp:4,dead:false}
     ],
+    items: [
+      {x:4.5, y:8.5, type:'ammo', collected:false},
+      {x:11.5, y:4.5, type:'ammo', collected:false},
+      {x:9.5, y:2.5, type:'weapon', collected:false}
+    ],
     startX:1.5, startY:1.5
   }
 ];
@@ -113,40 +129,47 @@ let currentLevelIdx = 0;
 let MAP = [], MW = 0, MH = 0;
 let px, py, pa = 0;
 let hp = 100, ammo = 50, score = 0;
+let damageMult = 1;   // 2x when golden gun picked up
 let flash = 0;
 let enemies = [];
+let items = [];
 let gameActive = true;
-let gameEnded = false;   // true when dead or completed all levels
+let gameEnded = false;
 let levelClearing = false;
+let reloadCooldown = 0;
 
-// DOM elements
-const c = document.getElementById('c'), ctx = c.getContext('2d');
-const hpSpan = document.getElementById('hp'), ammoSpan = document.getElementById('am');
-const scoreSpan = document.getElementById('score'), levelSpan = document.getElementById('level');
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const hpSpan = document.getElementById('hp');
+const ammoSpan = document.getElementById('am');
+const scoreSpan = document.getElementById('score');
+const levelSpan = document.getElementById('level');
+const damageSpan = document.getElementById('damage');
 
 // ===================== HELPER FUNCTIONS =====================
 function loadLevel(index) {
   const lvl = LEVELS[index];
-  // Deep copy map
   MAP = lvl.map.map(row => [...row]);
   MW = MAP[0].length;
   MH = MAP.length;
-  // Deep copy enemies
   enemies = lvl.enemies.map(e => ({...e, dead: false}));
+  items = lvl.items.map(i => ({...i, collected: false}));
   px = lvl.startX;
   py = lvl.startY;
   pa = 0;
-  // Don't reset hp/ammo/score - they carry over
-  if (hp <= 0) hp = 100; // safety
+  if (hp <= 0) hp = 100;
   if (ammo <= 0) ammo = 50;
+  damageMult = 1;  // reset damage multiplier each level
   updateUI();
   levelSpan.textContent = (index+1);
+  damageSpan.textContent = damageMult+"x";
 }
 
 function updateUI() {
   hpSpan.textContent = Math.floor(Math.max(0, hp));
   ammoSpan.textContent = ammo;
   scoreSpan.textContent = score;
+  damageSpan.textContent = damageMult+"x";
 }
 
 function solid(x,y) {
@@ -175,19 +198,16 @@ function rayDDA(ax, ay, angle) {
   return {d:16, side:0};
 }
 
-// ===================== LEVEL PROGRESSION =====================
 function checkLevelComplete() {
   if (!gameActive || gameEnded) return;
   let anyAlive = enemies.some(e => !e.dead);
   if (!anyAlive && !levelClearing) {
     levelClearing = true;
     if (currentLevelIdx + 1 < LEVELS.length) {
-      // go to next level
       currentLevelIdx++;
       loadLevel(currentLevelIdx);
       levelClearing = false;
     } else {
-      // GAME COMPLETE!
       gameActive = false;
       gameEnded = true;
       showNameEntryModal("VICTORY! You cleared all levels! Enter your name:");
@@ -195,7 +215,6 @@ function checkLevelComplete() {
   }
 }
 
-// ===================== SHOOTING & SCORE =====================
 function shoot() {
   if (!gameActive || ammo<=0) return;
   ammo--;
@@ -218,7 +237,8 @@ function shoot() {
   }
   if (bestIdx >= 0) {
     let e = enemies[bestIdx];
-    e.hp--;
+    let damage = damageMult;
+    e.hp -= damage;
     if (e.hp <= 0) {
       e.dead = true;
       score += 100;
@@ -227,7 +247,38 @@ function shoot() {
   }
 }
 
-// ===================== GAME OVER / LEADERBOARD =====================
+function reloadGun() {
+  if (!gameActive) return;
+  if (reloadCooldown > 0) return;
+  if (ammo >= 100) return; // max ammo limit
+  let gain = 10;
+  ammo = Math.min(100, ammo + gain);
+  reloadCooldown = 30; // ~0.5 seconds at 60fps (30 frames)
+  updateUI();
+}
+
+// Collect items
+function collectItems() {
+  for (let i=0; i<items.length; i++) {
+    let it = items[i];
+    if (it.collected) continue;
+    let dx = px - it.x, dy = py - it.y;
+    let dist = Math.sqrt(dx*dx+dy*dy);
+    if (dist < 0.5) {
+      it.collected = true;
+      if (it.type === 'ammo') {
+        ammo = Math.min(100, ammo + 15);
+        updateUI();
+      } else if (it.type === 'weapon') {
+        ammo = Math.min(100, ammo + 50);
+        damageMult = 2;
+        updateUI();
+      }
+    }
+  }
+}
+
+// ===================== LEADERBOARD =====================
 let leaderboard = [];
 
 function loadLeaderboard() {
@@ -269,8 +320,7 @@ function showNameEntryModal(message) {
       <input type="text" id="playerName" maxlength="15" placeholder="YOUR NAME" autocomplete="off">
       <br>
       <button id="submitScoreBtn">SAVE SCORE</button>
-      <br><br>
-      <button id="restartBtn">RESTART GAME</button>
+      <button id="restartBtn">RESTART</button>
     </div>
   `;
   document.body.appendChild(modal);
@@ -292,6 +342,7 @@ function resetGame() {
   hp = 100;
   ammo = 50;
   score = 0;
+  damageMult = 1;
   gameActive = true;
   gameEnded = false;
   levelClearing = false;
@@ -299,10 +350,11 @@ function resetGame() {
   updateUI();
 }
 
-// ===================== UPDATE & DRAW =====================
+// ===================== GAME UPDATE & DRAW =====================
+let K = {L:0,R:0,F:0,B:0};
+
 function update() {
   if (!gameActive) return;
-  // movement keys
   if (K.L) pa -= 0.05;
   if (K.R) pa += 0.05;
   let spd = 0.07;
@@ -337,11 +389,12 @@ function update() {
     }
   }
   if (flash > 0) flash--;
+  if (reloadCooldown > 0) reloadCooldown--;
+  collectItems();
   checkLevelComplete();
 }
 
 function draw() {
-  if (!c || !ctx) return;
   const W = c.width, H = c.height;
   if (W===0 || H===0) return;
 
@@ -354,6 +407,7 @@ function draw() {
   const RAYS = W;
   let zbuf = new Float32Array(W);
 
+  // walls
   for (let i=0;i<RAYS;i++) {
     let angle = pa - FOV/2 + FOV*(i/RAYS);
     let hit = rayDDA(px,py,angle);
@@ -368,13 +422,48 @@ function draw() {
     ctx.fillRect(i, (H-wh)/2, 1, wh);
   }
 
-  // sort enemies by distance
+  // draw items (sorted by distance)
+  let visibleItems = items.filter(it => !it.collected);
+  let itemSprites = visibleItems.map(it => ({x:it.x, y:it.y, type:it.type}));
+  itemSprites.sort((a,b) => {
+    let da = (a.x-px)*(a.x-px)+(a.y-py)*(a.y-py);
+    let db = (b.x-px)*(b.x-px)+(b.y-py)*(b.y-py);
+    return db - da;
+  });
+  for (let it of itemSprites) {
+    let dx = it.x-px, dy = it.y-py;
+    let d = Math.sqrt(dx*dx+dy*dy);
+    if (d<0.3 || d>12) continue;
+    let ea = Math.atan2(dy,dx) - pa;
+    while(ea>Math.PI) ea-=Math.PI*2;
+    while(ea<-Math.PI) ea+=Math.PI*2;
+    if (Math.abs(ea) > FOV) continue;
+    let sx = W/2 + (ea/(FOV/2))*(W/2);
+    let sh = H/d;
+    let sw = sh*0.5;
+    let x0 = Math.floor(sx - sw/2);
+    let br = Math.max(0.3, 1-d/10);
+    for (let si=0; si<Math.ceil(sw); si++) {
+      let scx = x0+si;
+      if (scx<0 || scx>=W) continue;
+      if (zbuf[scx] <= d) continue;
+      ctx.globalAlpha = br;
+      if (it.type === 'ammo') {
+        ctx.fillStyle = '#ffcc00';  // gold ammo box
+      } else {
+        ctx.fillStyle = '#ff4400';  // red-orange weapon orb
+      }
+      ctx.fillRect(scx, (H-sh)/2 + sh*0.2, 1, sh*0.6);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // enemies
   let sorted = [...enemies].filter(e=>!e.dead).sort((a,b)=>{
     let da = (a.x-px)*(a.x-px)+(a.y-py)*(a.y-py);
     let db = (b.x-px)*(b.x-px)+(b.y-py)*(b.y-py);
     return db - da;
   });
-
   for (let e of sorted) {
     let dx = e.x-px, dy = e.y-py;
     let d = Math.sqrt(dx*dx+dy*dy);
@@ -402,7 +491,7 @@ function draw() {
     }
   }
 
-  // Gun
+  // Gun & UI
   ctx.fillStyle = 'rgba(50,50,50,0.92)';
   ctx.fillRect(W/2-60, H-75, 120, 60);
   ctx.fillStyle = '#aaa';
@@ -417,8 +506,13 @@ function draw() {
     ctx.arc(W/2, H-80, flash*3, 0, Math.PI*2);
     ctx.fill();
   }
-
-  // Crosshair
+  if (reloadCooldown > 0) {
+    ctx.fillStyle = 'rgba(0,200,255,0.5)';
+    ctx.fillRect(W/2-30, H-25, 60, 8);
+    let pct = 1 - reloadCooldown/30;
+    ctx.fillStyle = '#0ff';
+    ctx.fillRect(W/2-30, H-25, 60*pct, 8);
+  }
   ctx.strokeStyle = 'rgba(255,255,0,0.7)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -442,8 +536,7 @@ function draw() {
   }
 }
 
-// ===================== INPUT HANDLING =====================
-let K = {L:0,R:0,F:0,B:0};
+// ===================== INPUT & RESIZE =====================
 function reg(id,k){
   let el=document.getElementById(id);
   if(!el) return;
@@ -453,15 +546,15 @@ function reg(id,k){
 }
 reg('bl','L'); reg('br','R'); reg('bf','F'); reg('bb','B');
 document.getElementById('fire').addEventListener('touchstart',e=>{e.preventDefault(); shoot();});
+document.getElementById('reloadBtn').addEventListener('touchstart',e=>{e.preventDefault(); reloadGun();});
 
-// ===================== INITIALISATION & LOOP =====================
 function resizeCanvas() {
   let hh = document.getElementById('hud').offsetHeight;
   let bh = document.getElementById('btns').offsetHeight;
   c.width = window.innerWidth;
   c.height = window.innerHeight - hh - bh;
 }
-window.addEventListener('resize', ()=>{ resizeCanvas(); draw(); });
+window.addEventListener('resize', () => { resizeCanvas(); draw(); });
 resizeCanvas();
 loadLeaderboard();
 loadLevel(0);
