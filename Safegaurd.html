@@ -1,0 +1,335 @@
+import { useState, useCallback } from “react”;
+
+const PAY_PER_JOB = 14.50;
+
+const SAMPLE_JOBS = [
+{ id: 1, address: “1234 W 4700 S, Taylorsville, UT”, client: “Allstate”, contactName: “John Smith”, contactPhone: “8015550101”, priority: “high”, claimNumber: “ALL-2024-0091” },
+{ id: 2, address: “892 E 3300 S, Salt Lake City, UT”, client: “Farmers”, contactName: “Maria Lopez”, contactPhone: “8015550182”, priority: “high”, claimNumber: “FRM-2024-0342” },
+{ id: 3, address: “3401 S 900 W, South Salt Lake, UT”, client: “Allstate”, contactName: “Derek Hines”, contactPhone: “8015550263”, priority: “medium”, claimNumber: “ALL-2024-0105” },
+{ id: 4, address: “5620 S Redwood Rd, Murray, UT”, client: “Farmers”, contactName: “Tanya Brooks”, contactPhone: “8015550374”, priority: “medium”, claimNumber: “FRM-2024-0388” },
+{ id: 5, address: “410 E 12300 S, Draper, UT”, client: “Allstate”, contactName: “Carl Webb”, contactPhone: “8015550445”, priority: “low”, claimNumber: “ALL-2024-0117” },
+{ id: 6, address: “2245 W 7800 S, West Jordan, UT”, client: “Farmers”, contactName: “Sandra Lee”, contactPhone: “8015550556”, priority: “medium”, claimNumber: “FRM-2024-0401” },
+];
+
+const CLIENT_COLORS = { Allstate: “#60a5fa”, Farmers: “#fb923c” };
+const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
+
+const SMS_TEMPLATES = {
+Allstate: (job, name) =>
+`Hi ${job.contactName}, this is ${name} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${job.address} for claim #${job.claimNumber}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`,
+Farmers: (job, name) =>
+`Hi ${job.contactName}, this is ${name} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${job.address} for claim #${job.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`,
+};
+
+const inputStyle = {
+width: “100%”, padding: “10px 12px”, background: “rgba(0,0,0,0.4)”,
+border: “1px solid #1e3a2e”, borderRadius: “6px”,
+color: “#d1fae5”, fontFamily: “‘Courier New’, monospace”, fontSize: “14px”,
+outline: “none”, boxSizing: “border-box”,
+};
+
+export default function FieldInspectorApp() {
+const [jobs, setJobs] = useState(SAMPLE_JOBS);
+const [optimized, setOptimized] = useState(false);
+const [completedIds, setCompletedIds] = useState([]);
+const [activeTab, setActiveTab] = useState(“route”);
+const [optimizing, setOptimizing] = useState(false);
+const [inspectorName, setInspectorName] = useState(“Your Name”);
+const [editingName, setEditingName] = useState(false);
+const [textModal, setTextModal] = useState(null);
+const [newJob, setNewJob] = useState({ address: “”, client: “Allstate”, contactName: “”, contactPhone: “”, claimNumber: “”, priority: “medium” });
+
+const pendingJobs = jobs.filter(j => !completedIds.includes(j.id));
+const completedJobs = jobs.filter(j => completedIds.includes(j.id));
+const totalEarned = completedJobs.length * PAY_PER_JOB;
+const totalPending = pendingJobs.length * PAY_PER_JOB;
+
+const optimizeRoute = useCallback(() => {
+setOptimizing(true);
+setTimeout(() => {
+setJobs(prev => […prev].sort((a, b) => {
+if (completedIds.includes(a.id)) return 1;
+if (completedIds.includes(b.id)) return -1;
+return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+}));
+setOptimized(true);
+setOptimizing(false);
+}, 1200);
+}, [jobs, completedIds]);
+
+const toggleComplete = (id) =>
+setCompletedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : […prev, id]);
+
+const addJob = () => {
+if (!newJob.address || !newJob.contactName) return;
+setJobs(prev => […prev, {
+…newJob, id: Date.now(),
+claimNumber: newJob.claimNumber || `${newJob.client.slice(0,3).toUpperCase()}-${Date.now()}`,
+}]);
+setNewJob({ address: “”, client: “Allstate”, contactName: “”, contactPhone: “”, claimNumber: “”, priority: “medium” });
+setActiveTab(“route”);
+setOptimized(false);
+};
+
+const removeJob = (id) => {
+setJobs(prev => prev.filter(j => j.id !== id));
+setCompletedIds(prev => prev.filter(x => x !== id));
+};
+
+const sendSMS = (job) => {
+const msg = SMS_TEMPLATES[job.client](job, inspectorName);
+const phone = job.contactPhone.replace(/\D/g, “”);
+window.open(`sms:${phone}?body=${encodeURIComponent(msg)}`, “_blank”);
+setTextModal(null);
+};
+
+const openInMaps = (address) =>
+window.open(`https://maps.google.com/maps?q=${encodeURIComponent(address)}`, “_blank”);
+
+const openFullRoute = () => {
+const pending = jobs.filter(j => !completedIds.includes(j.id));
+if (!pending.length) return;
+window.open(`https://www.google.com/maps/dir/${pending.map(j => encodeURIComponent(j.address)).join("/")}`, “_blank”);
+};
+
+const font = “‘Courier New’, Courier, monospace”;
+
+return (
+<div style={{ minHeight: “100vh”, background: “linear-gradient(135deg, #0f1923 0%, #1a2744 50%, #0f2518 100%)”, fontFamily: font, color: “#e2f0e8” }}>
+
+```
+  {/* SMS Modal */}
+  {textModal && (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+      <div style={{ background: "#0d1f12", border: "1px solid #22c55e", borderRadius: "14px", padding: "22px", maxWidth: "380px", width: "100%" }}>
+        <div style={{ fontSize: "10px", letterSpacing: "3px", color: "#22c55e", marginBottom: "4px" }}>PREVIEW TEXT MESSAGE</div>
+        <div style={{ fontSize: "15px", fontWeight: "bold", marginBottom: "1px" }}>{textModal.contactName}</div>
+        <div style={{ fontSize: "12px", color: CLIENT_COLORS[textModal.client], marginBottom: "14px" }}>{textModal.client} · {textModal.contactPhone}</div>
+        <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "12px", fontSize: "12px", color: "#d1fae5", lineHeight: "1.6", marginBottom: "16px", border: "1px solid #1e3a2e" }}>
+          {SMS_TEMPLATES[textModal.client](textModal, inspectorName)}
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={() => setTextModal(null)} style={{ flex: 1, padding: "10px", background: "rgba(239,68,68,0.15)", border: "1px solid #ef4444", borderRadius: "8px", color: "#ef4444", fontFamily: font, fontSize: "12px", cursor: "pointer" }}>CANCEL</button>
+          <button onClick={() => sendSMS(textModal)} style={{ flex: 2, padding: "10px", background: "linear-gradient(135deg, #14532d, #166534)", border: "1px solid #22c55e", borderRadius: "8px", color: "#22c55e", fontFamily: font, fontSize: "12px", letterSpacing: "2px", fontWeight: "bold", cursor: "pointer" }}>📱 SEND TEXT</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Header */}
+  <div style={{ background: "linear-gradient(90deg, #14532d, #1e3a5f)", padding: "20px 24px 16px", borderBottom: "2px solid #22c55e", position: "sticky", top: 0, zIndex: 100 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div>
+        <div style={{ fontSize: "10px", letterSpacing: "4px", color: "#22c55e" }}>FIELD INSPECTOR</div>
+        <div style={{ fontSize: "20px", fontWeight: "bold" }}>ROUTE PRO</div>
+        {editingName
+          ? <input autoFocus value={inspectorName} onChange={e => setInspectorName(e.target.value)} onBlur={() => setEditingName(false)} style={{ ...inputStyle, fontSize: "11px", padding: "3px 8px", marginTop: "4px", width: "160px" }} />
+          : <div onClick={() => setEditingName(true)} style={{ fontSize: "11px", color: "#86efac", cursor: "pointer", marginTop: "3px" }}>✏️ {inspectorName}</div>
+        }
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <div style={{ fontSize: "10px", color: "#86efac" }}>EXTERIOR SURVEYS</div>
+        <div style={{ fontSize: "26px", fontWeight: "bold", color: "#22c55e" }}>{jobs.length}</div>
+        <div style={{ fontSize: "11px", color: "#86efac" }}>${PAY_PER_JOB.toFixed(2)} / survey</div>
+      </div>
+    </div>
+    <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+      {[
+        { label: "EARNED", value: `$${totalEarned.toFixed(2)}`, color: "#22c55e" },
+        { label: "PENDING", value: `$${totalPending.toFixed(2)}`, color: "#60a5fa" },
+        { label: "DONE", value: `${completedIds.length}/${jobs.length}`, color: "#fb923c" },
+      ].map(s => (
+        <div key={s.label} style={{ flex: 1, background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "8px 10px", border: `1px solid ${s.color}33` }}>
+          <div style={{ fontSize: "9px", letterSpacing: "2px", color: s.color, opacity: 0.8 }}>{s.label}</div>
+          <div style={{ fontSize: "14px", fontWeight: "bold", color: s.color }}>{s.value}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* Tabs */}
+  <div style={{ display: "flex", borderBottom: "1px solid #1e3a2e", background: "#0d1f12" }}>
+    {[{ k: "route", l: "🗺 ROUTE" }, { k: "text", l: "📱 TEXTS" }, { k: "add", l: "➕ ADD" }, { k: "stats", l: "📊 STATS" }].map(t => (
+      <button key={t.k} onClick={() => setActiveTab(t.k)} style={{ flex: 1, padding: "11px 4px", background: "none", border: "none", color: activeTab === t.k ? "#22c55e" : "#6b7280", borderBottom: activeTab === t.k ? "2px solid #22c55e" : "2px solid transparent", fontFamily: font, fontSize: "10px", letterSpacing: "1px", fontWeight: "bold", cursor: "pointer" }}>{t.l}</button>
+    ))}
+  </div>
+
+  <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto" }}>
+
+    {/* ROUTE */}
+    {activeTab === "route" && (
+      <div>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+          <button onClick={optimizeRoute} disabled={optimizing} style={{ flex: 1, padding: "12px", background: optimizing ? "#1e3a2e" : "linear-gradient(135deg, #14532d, #166534)", border: "1px solid #22c55e", borderRadius: "8px", color: "#22c55e", fontFamily: font, fontSize: "11px", letterSpacing: "2px", fontWeight: "bold", cursor: "pointer", boxShadow: optimizing ? "none" : "0 0 12px #22c55e44" }}>
+            {optimizing ? "OPTIMIZING..." : optimized ? "✓ OPTIMIZED" : "⚡ OPTIMIZE"}
+          </button>
+          <button onClick={openFullRoute} style={{ flex: 1, padding: "12px", background: "linear-gradient(135deg, #1e3a5f, #1e40af)", border: "1px solid #60a5fa", borderRadius: "8px", color: "#60a5fa", fontFamily: font, fontSize: "11px", letterSpacing: "2px", fontWeight: "bold", cursor: "pointer" }}>🧭 FULL ROUTE</button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {jobs.map((job, idx) => {
+            const done = completedIds.includes(job.id);
+            const cc = CLIENT_COLORS[job.client] || "#22c55e";
+            return (
+              <div key={job.id} style={{ background: done ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.04)", border: done ? "1px solid #374151" : `1px solid ${cc}44`, borderRadius: "10px", padding: "14px", opacity: done ? 0.5 : 1, transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "3px", background: done ? "#374151" : cc }} />
+                <div style={{ marginLeft: "8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "10px", background: `${cc}22`, color: cc, border: `1px solid ${cc}`, borderRadius: "4px", padding: "2px 7px", letterSpacing: "1px", fontWeight: "bold" }}>{job.client.toUpperCase()}</span>
+                      <span style={{ fontSize: "9px", color: job.priority === "high" ? "#f87171" : job.priority === "medium" ? "#fb923c" : "#6b7280" }}>{job.priority === "high" ? "● HIGH" : job.priority === "medium" ? "● MED" : "○ LOW"}</span>
+                    </div>
+                    <div style={{ fontSize: "12px", color: done ? "#6b7280" : "#d1fae5", marginBottom: "2px" }}>#{String(idx + 1).padStart(2, "0")} — {job.address}</div>
+                    <div style={{ fontSize: "10px", color: "#6b7280", marginBottom: "2px" }}>{job.claimNumber} · {job.contactName}</div>
+                    <div style={{ fontSize: "10px", color: "#4ade8088", marginBottom: "3px" }}>🏠 EXTERIOR ONLY</div>
+                    <div style={{ fontSize: "16px", fontWeight: "bold", color: done ? "#6b7280" : "#22c55e" }}>${PAY_PER_JOB.toFixed(2)}</div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginLeft: "8px" }}>
+                    <button onClick={() => openInMaps(job.address)} style={{ padding: "5px 9px", background: "rgba(96,165,250,0.15)", border: "1px solid #60a5fa44", borderRadius: "6px", color: "#60a5fa", fontFamily: font, fontSize: "10px", cursor: "pointer" }}>📍 MAP</button>
+                    <button onClick={() => setTextModal(job)} style={{ padding: "5px 9px", background: `${cc}15`, border: `1px solid ${cc}44`, borderRadius: "6px", color: cc, fontFamily: font, fontSize: "10px", cursor: "pointer" }}>📱 TEXT</button>
+                    <button onClick={() => toggleComplete(job.id)} style={{ padding: "5px 9px", background: done ? "rgba(34,197,94,0.2)" : "rgba(0,0,0,0.3)", border: done ? "1px solid #22c55e" : "1px solid #374151", borderRadius: "6px", color: done ? "#22c55e" : "#6b7280", fontFamily: font, fontSize: "10px", cursor: "pointer" }}>{done ? "✓ DONE" : "○ DONE"}</button>
+                    <button onClick={() => removeJob(job.id)} style={{ padding: "5px 9px", background: "rgba(239,68,68,0.1)", border: "1px solid #ef444433", borderRadius: "6px", color: "#ef4444", fontFamily: font, fontSize: "10px", cursor: "pointer" }}>✕</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    )}
+
+    {/* TEXTS */}
+    {activeTab === "text" && (
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div style={{ fontSize: "11px", letterSpacing: "3px", color: "#22c55e" }}>TEXT CLIENTS BY CARRIER</div>
+        {["Allstate", "Farmers"].map(client => {
+          const clientJobs = jobs.filter(j => j.client === client && !completedIds.includes(j.id));
+          const color = CLIENT_COLORS[client];
+          return (
+            <div key={client} style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${color}33`, borderRadius: "12px", padding: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <div>
+                  <div style={{ fontSize: "15px", fontWeight: "bold", color }}>{client}</div>
+                  <div style={{ fontSize: "11px", color: "#6b7280" }}>{clientJobs.length} pending · exterior surveys</div>
+                </div>
+                <div style={{ fontSize: "10px", background: `${color}22`, color, border: `1px solid ${color}`, borderRadius: "6px", padding: "4px 10px" }}>EXTERIOR ONLY</div>
+              </div>
+              {clientJobs.length === 0
+                ? <div style={{ textAlign: "center", color: "#6b7280", fontSize: "12px", padding: "10px" }}>All {client} surveys complete ✓</div>
+                : clientJobs.map(job => (
+                  <div key={job.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "10px 12px", border: "1px solid #1e3a2e", marginBottom: "8px" }}>
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#d1fae5" }}>{job.contactName}</div>
+                      <div style={{ fontSize: "10px", color: "#6b7280" }}>{job.address.split(",")[0]}</div>
+                      <div style={{ fontSize: "10px", color: "#6b7280" }}>{job.claimNumber}</div>
+                    </div>
+                    <button onClick={() => setTextModal(job)} style={{ padding: "7px 12px", background: `${color}22`, border: `1px solid ${color}`, borderRadius: "6px", color, fontFamily: font, fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}>📱 TEXT</button>
+                  </div>
+                ))
+              }
+            </div>
+          );
+        })}
+        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #374151", borderRadius: "12px", padding: "14px" }}>
+          <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#6b7280", marginBottom: "6px" }}>MESSAGE PREVIEW</div>
+          <div style={{ fontSize: "11px", color: "#86efac", lineHeight: "1.7" }}>
+            "Hi [Name], this is <strong style={{ color: "#22c55e" }}>{inspectorName}</strong> with [Carrier] field services. I am scheduled for an <strong style={{ color: "#22c55e" }}>exterior survey</strong> at [Address] for claim #[Number]. EXTERIOR ONLY — no interior access needed..."
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ADD */}
+    {activeTab === "add" && (
+      <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #22c55e33", borderRadius: "12px", padding: "20px" }}>
+        <div style={{ fontSize: "13px", letterSpacing: "3px", color: "#22c55e", marginBottom: "20px", fontWeight: "bold" }}>NEW INSPECTION ORDER</div>
+        {[
+          { label: "PROPERTY ADDRESS", key: "address", placeholder: "123 Main St, Salt Lake City, UT" },
+          { label: "CONTACT NAME", key: "contactName", placeholder: "Homeowner name" },
+          { label: "CONTACT PHONE", key: "contactPhone", placeholder: "8015550100" },
+          { label: "CLAIM NUMBER", key: "claimNumber", placeholder: "e.g. ALL-2024-0200" },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: "12px" }}>
+            <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#86efac", marginBottom: "5px" }}>{f.label}</div>
+            <input type="text" placeholder={f.placeholder} value={newJob[f.key]} onChange={e => setNewJob(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} />
+          </div>
+        ))}
+        <div style={{ marginBottom: "12px" }}>
+          <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#86efac", marginBottom: "5px" }}>CARRIER</div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {["Allstate", "Farmers"].map(c => (
+              <button key={c} onClick={() => setNewJob(p => ({ ...p, client: c }))} style={{ flex: 1, padding: "10px", background: newJob.client === c ? `${CLIENT_COLORS[c]}22` : "rgba(0,0,0,0.3)", border: newJob.client === c ? `1px solid ${CLIENT_COLORS[c]}` : "1px solid #374151", borderRadius: "6px", color: newJob.client === c ? CLIENT_COLORS[c] : "#6b7280", fontFamily: font, fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>{c}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#86efac", marginBottom: "5px" }}>PRIORITY</div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {["high", "medium", "low"].map(p => (
+              <button key={p} onClick={() => setNewJob(prev => ({ ...prev, priority: p }))} style={{ flex: 1, padding: "8px", background: newJob.priority === p ? "rgba(34,197,94,0.2)" : "rgba(0,0,0,0.3)", border: newJob.priority === p ? "1px solid #22c55e" : "1px solid #374151", borderRadius: "6px", color: newJob.priority === p ? "#22c55e" : "#6b7280", fontFamily: font, fontSize: "10px", fontWeight: "bold", cursor: "pointer", textTransform: "uppercase" }}>{p}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid #22c55e33", borderRadius: "8px", padding: "10px", marginBottom: "16px", fontSize: "11px", color: "#86efac" }}>
+          🏠 EXTERIOR SURVEY · ${PAY_PER_JOB.toFixed(2)} fixed rate · Auto-generates text template
+        </div>
+        <button onClick={addJob} style={{ width: "100%", padding: "14px", background: "linear-gradient(135deg, #14532d, #166534)", border: "1px solid #22c55e", borderRadius: "8px", color: "#22c55e", fontFamily: font, fontSize: "13px", letterSpacing: "3px", fontWeight: "bold", cursor: "pointer", boxShadow: "0 0 16px #22c55e33" }}>+ ADD INSPECTION</button>
+      </div>
+    )}
+
+    {/* STATS */}
+    {activeTab === "stats" && (
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #22c55e33", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ fontSize: "11px", letterSpacing: "3px", color: "#22c55e", marginBottom: "16px" }}>EARNINGS TODAY</div>
+          {[
+            { label: "Completed", sub: `${completedIds.length} surveys`, value: `$${totalEarned.toFixed(2)}`, color: "#22c55e" },
+            { label: "Pending", sub: `${pendingJobs.length} surveys`, value: `$${totalPending.toFixed(2)}`, color: "#60a5fa" },
+          ].map(s => (
+            <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+              <div><div style={{ color: "#86efac" }}>{s.label}</div><div style={{ fontSize: "11px", color: "#6b7280" }}>{s.sub}</div></div>
+              <div style={{ color: s.color, fontWeight: "bold", fontSize: "18px" }}>{s.value}</div>
+            </div>
+          ))}
+          <div style={{ height: "1px", background: "#1e3a2e", margin: "10px 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ color: "#d1fae5", fontWeight: "bold" }}>Total Day</span>
+            <span style={{ color: "#f9fafb", fontWeight: "bold", fontSize: "22px" }}>${(jobs.length * PAY_PER_JOB).toFixed(2)}</span>
+          </div>
+        </div>
+        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #22c55e33", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ fontSize: "11px", letterSpacing: "3px", color: "#22c55e", marginBottom: "16px" }}>BY CARRIER</div>
+          {["Allstate", "Farmers"].map(client => {
+            const total = jobs.filter(j => j.client === client).length;
+            const done = jobs.filter(j => j.client === client && completedIds.includes(j.id)).length;
+            const color = CLIENT_COLORS[client];
+            return (
+              <div key={client} style={{ marginBottom: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                  <span style={{ color, fontWeight: "bold" }}>{client}</span>
+                  <span style={{ color: "#86efac" }}>{done}/{total} · ${(total * PAY_PER_JOB).toFixed(2)}</span>
+                </div>
+                <div style={{ background: "#1e3a2e", borderRadius: "100px", height: "6px" }}>
+                  <div style={{ height: "100%", borderRadius: "100px", width: `${total ? (done / total) * 100 : 0}%`, background: color, transition: "width 0.5s" }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #22c55e33", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ fontSize: "11px", letterSpacing: "3px", color: "#22c55e", marginBottom: "12px" }}>OVERALL PROGRESS</div>
+          <div style={{ background: "#1e3a2e", borderRadius: "100px", height: "12px", overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: "100px", width: `${jobs.length ? (completedIds.length / jobs.length) * 100 : 0}%`, background: "linear-gradient(90deg, #22c55e, #86efac)", transition: "width 0.5s" }} />
+          </div>
+          <div style={{ textAlign: "right", marginTop: "6px", color: "#86efac", fontSize: "12px" }}>
+            {jobs.length ? Math.round((completedIds.length / jobs.length) * 100) : 0}% complete
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+```
+
+);
+}
