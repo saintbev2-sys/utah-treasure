@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Neon Draw - Glow Art</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: #0a0a2a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: system-ui, 'Segoe UI', sans-serif;
+      touch-action: none; /* prevent scroll while drawing */
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 12px;
+    }
+    canvas {
+      background: #111;
+      border-radius: 24px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.3);
+      width: 100%;
+      height: auto;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      padding: 12px 18px;
+      border-radius: 60px;
+      border: 1px solid cyan;
+    }
+    button {
+      background: #1a1a3a;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 40px;
+      box-shadow: 0 0 6px cyan;
+      transition: 0.1s ease;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    button:active {
+      transform: scale(0.96);
+      background: cyan;
+      color: black;
+    }
+    .color-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    .color {
+      width: 44px;
+      height: 44px;
+      border-radius: 44px;
+      border: 2px solid white;
+      box-shadow: 0 0 8px currentColor;
+      transition: 0.05s linear;
+    }
+    .color:active {
+      transform: scale(0.9);
+    }
+    .active-color {
+      border: 3px solid gold;
+      transform: scale(1.05);
+      box-shadow: 0 0 16px gold;
+    }
+    .save-status {
+      color: #0f0;
+      font-size: 0.8rem;
+      margin-left: 8px;
+      background: #000000aa;
+      padding: 5px 12px;
+      border-radius: 30px;
+    }
+    @media (max-width: 600px) {
+      button { padding: 8px 16px; font-size: 1rem; }
+      .color { width: 38px; height: 38px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <canvas id="drawCanvas" width="700" height="700" style="width:100%; height:auto; max-width:700px; aspect-ratio:1/1"></canvas>
+  
+  <div class="toolbar">
+    <div class="color-buttons" id="colorBar">
+      <div class="color" style="background: #ff3366;" data-color="#ff3366"></div>
+      <div class="color" style="background: #33ff66;" data-color="#33ff66"></div>
+      <div class="color" style="background: #33aaff;" data-color="#33aaff"></div>
+      <div class="color" style="background: #ffcc33;" data-color="#ffcc33"></div>
+      <div class="color" style="background: #ff66ff;" data-color="#ff66ff"></div>
+      <div class="color" style="background: #ffffff;" data-color="#ffffff"></div>
+    </div>
+    <button id="clearBtn">🗑️ CLEAR</button>
+    <button id="saveBtn">💾 SAVE</button>
+    <span id="saveMsg" class="save-status"></span>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size (square, high-res for export)
+    const size = 700;
+    canvas.width = size;
+    canvas.height = size;
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+    
+    // Drawing state
+    let drawing = false;
+    let currentColor = '#ff3366';  // start with pink
+    
+    // Setup neon line style
+    function setDrawStyle() {
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 28;   // thick, juicy neon lines
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = currentColor;
+      ctx.strokeStyle = currentColor;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+    
+    // Fill background with deep space
+    function initBackground() {
+      ctx.fillStyle = '#0a0a1a';
+      ctx.fillRect(0, 0, size, size);
+      // subtle grid
+      ctx.beginPath();
+      ctx.strokeStyle = '#1a2a3a';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < size; i += 40) {
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, size);
+        ctx.moveTo(0, i);
+        ctx.lineTo(size, i);
+        ctx.stroke();
+      }
+      setDrawStyle();
+    }
+    
+    initBackground();
+    
+    // ---- Touch & Mouse drawing ----
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;   // canvas physical px / CSS px
+      const scaleY = canvas.height / rect.height;
+      let clientX, clientY;
+      
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      let canvasX = (clientX - rect.left) * scaleX;
+      let canvasY = (clientY - rect.top) * scaleY;
+      canvasX = Math.min(Math.max(0, canvasX), canvas.width);
+      canvasY = Math.min(Math.max(0, canvasY), canvas.height);
+      return { x: canvasX, y: canvasY };
+    }
+    
+    function startDraw(e) {
+      e.preventDefault();
+      drawing = true;
+      const { x, y } = getCanvasCoords(e);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x+0.5, y+0.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+    
+    function drawMove(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const { x, y } = getCanvasCoords(e);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+    
+    function endDraw(e) {
+      drawing = false;
+      ctx.beginPath(); // reset path
+    }
+    
+    // Touch events
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', drawMove);
+    canvas.addEventListener('touchend', endDraw);
+    canvas.addEventListener('touchcancel', endDraw);
+    
+    // Mouse for debugging (also works on desktop)
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', drawMove);
+    canvas.addEventListener('mouseup', endDraw);
+    
+    // Color selection
+    const colorDivs = document.querySelectorAll('.color');
+    function setActiveColor(color) {
+      currentColor = color;
+      setDrawStyle();
+      // update active highlight
+      colorDivs.forEach(div => {
+        if (div.getAttribute('data-color') === color) {
+          div.classList.add('active-color');
+        } else {
+          div.classList.remove('active-color');
+        }
+      });
+    }
+    
+    colorDivs.forEach(div => {
+      const col = div.getAttribute('data-color');
+      div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveColor(col);
+      });
+      div.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setActiveColor(col);
+      });
+    });
+    
+    // Clear canvas
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      initBackground();
+    });
+    document.getElementById('clearBtn').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      initBackground();
+    });
+    
+    // Save to Photo Library (using canvas.toBlob and download, or share)
+    document.getElementById('saveBtn').addEventListener('click', saveDrawing);
+    document.getElementById('saveBtn').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      saveDrawing();
+    });
+    
+    function saveDrawing() {
+      // Show saving feedback
+      const msgSpan = document.getElementById('saveMsg');
+      msgSpan.textContent = '⏳ saving...';
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          msgSpan.textContent = '❌ error';
+          setTimeout(() => { msgSpan.textContent = ''; }, 1500);
+          return;
+        }
+        // Create a temporary link for download (works on iOS with "Save to Files" or share)
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `neon_drawing_${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        msgSpan.textContent = '✅ saved! (check Files)';
+        setTimeout(() => { msgSpan.textContent = ''; }, 2000);
+        
+        // Alternative: try to use Web Share API (better on mobile)
+        if (navigator.share && blob) {
+          const file = new File([blob], 'neon-art.png', { type: 'image/png' });
+          navigator.share({
+            title: 'My Neon Drawing',
+            files: [file]
+          }).catch(err => console.log('share failed', err));
+        }
+      }, 'image/png');
+    }
+    
+    // set initial active color
+    setActiveColor('#ff3366');
+    
+    // Add rainbow effect: optional long-press random color? not needed.
+    console.log('✨ Neon Draw ready – draw with glow!');
+  })();
+</script>
+</body>
+</html>
