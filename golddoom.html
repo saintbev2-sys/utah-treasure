@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover'><title>Gold Doom - Hidden Items</title><style>
+<html><head><meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover'><title>Gold Doom - Enhanced</title><style>
 *{margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 body{background:#000;overflow:hidden;font-family:Arial}
 #hud{display:flex;justify-content:space-around;align-items:center;background:#111;padding:6px;border-bottom:2px solid #f00;flex-wrap:wrap}
@@ -16,6 +16,7 @@ canvas{display:block;width:100%;height:auto}
 .modal div{background:#222;border:3px solid #f00;border-radius:20px;padding:20px;text-align:center;color:#ff0;width:250px}
 .modal input{padding:10px;margin:15px 0;width:80%;font-size:16px;border-radius:8px}
 .modal button{padding:8px 16px;background:#8b0000;color:#fff;border:none;border-radius:8px;font-weight:bold;margin:5px}
+.status-icon{font-size:18px;margin-left:5px}
 </style></head>
 <body>
 <div id=hud>
@@ -25,6 +26,7 @@ canvas{display:block;width:100%;height:auto}
   <span>⭐ <span id=score>0</span></span>
   <span>📀 Lv <span id=level>1</span></span>
   <span>💥 <span id=damage>1x</span></span>
+  <span id=statusIcons></span>
 </div>
 <canvas id=c></canvas>
 <div id=btns>
@@ -36,9 +38,9 @@ canvas{display:block;width:100%;height:auto}
 <div id=leaderboardPanel><h3>🏆 TOP DEMON SLAYERS</h3><ol id=leaderList></ol></div>
 
 <script>
-// ===================== LEVELS (with hidden item positions) =====================
+// ===================== LEVELS (5 levels with new enemies & power-ups) =====================
 const LEVELS = [
-  { // Level 1
+  { // Level 1 - introduction
     map: [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -55,18 +57,19 @@ const LEVELS = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ],
     enemies: [
-      {x:8,y:2,hp:3,dead:false},{x:14,y:6,hp:3,dead:false},
-      {x:3,y:10,hp:3,dead:false},{x:11,y:9,hp:3,dead:false},
-      {x:7,y:6,hp:3,dead:false}
+      {x:8,y:2,type:'imp',hp:2,dead:false, speed:0.018},{x:14,y:6,type:'demon',hp:5,dead:false, speed:0.008},
+      {x:3,y:10,type:'imp',hp:2,dead:false, speed:0.018},{x:11,y:9,type:'demon',hp:5,dead:false, speed:0.008},
+      {x:7,y:6,type:'lost',hp:3,dead:false, speed:0.024}
     ],
     items: [
       {x:4.5, y:4.5, type:'ammo', collected:false},
-      {x:12.5, y:7.5, type:'ammo', collected:false},
-      {x:9.5, y:1.5, type:'weapon', collected:false}  // hidden golden gun
+      {x:12.5, y:7.5, type:'health', collected:false},
+      {x:9.5, y:1.5, type:'weapon', collected:false},
+      {x:2.5, y:2.5, type:'speed', collected:false}
     ],
     startX:1.5, startY:1.5
   },
-  { // Level 2
+  { // Level 2 - more imps
     map: [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
@@ -83,18 +86,19 @@ const LEVELS = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ],
     enemies: [
-      {x:3,y:2,hp:4,dead:false},{x:12,y:3,hp:4,dead:false},
-      {x:5,y:8,hp:3,dead:false},{x:10,y:9,hp:3,dead:false},
-      {x:8,y:5,hp:5,dead:false},{x:13,y:11,hp:3,dead:false}
+      {x:3,y:2,type:'imp',hp:2,dead:false, speed:0.018},{x:12,y:3,type:'demon',hp:5,dead:false, speed:0.008},
+      {x:5,y:8,type:'lost',hp:3,dead:false, speed:0.024},{x:10,y:9,type:'imp',hp:2,dead:false, speed:0.018},
+      {x:8,y:5,type:'demon',hp:5,dead:false, speed:0.008},{x:13,y:11,type:'lost',hp:3,dead:false, speed:0.024}
     ],
     items: [
       {x:6.5, y:3.5, type:'ammo', collected:false},
-      {x:9.5, y:10.5, type:'ammo', collected:false},
-      {x:2.5, y:5.5, type:'weapon', collected:false}
+      {x:9.5, y:10.5, type:'health', collected:false},
+      {x:2.5, y:5.5, type:'weapon', collected:false},
+      {x:11.5, y:8.5, type:'invincible', collected:false}
     ],
     startX:1.5, startY:1.5
   },
-  { // Level 3
+  { // Level 3 - demon heavy
     map: [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -111,14 +115,76 @@ const LEVELS = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ],
     enemies: [
-      {x:7,y:5,hp:8,dead:false},{x:8,y:5,hp:6,dead:false},
-      {x:7,y:7,hp:6,dead:false},{x:8,y:7,hp:8,dead:false},
-      {x:12,y:2,hp:4,dead:false},{x:3,y:10,hp:4,dead:false}
+      {x:7,y:5,type:'demon',hp:6,dead:false, speed:0.008},{x:8,y:5,type:'demon',hp:6,dead:false, speed:0.008},
+      {x:7,y:7,type:'demon',hp:6,dead:false, speed:0.008},{x:8,y:7,type:'demon',hp:6,dead:false, speed:0.008},
+      {x:12,y:2,type:'lost',hp:3,dead:false, speed:0.024},{x:3,y:10,type:'imp',hp:2,dead:false, speed:0.018}
     ],
     items: [
       {x:4.5, y:8.5, type:'ammo', collected:false},
-      {x:11.5, y:4.5, type:'ammo', collected:false},
-      {x:9.5, y:2.5, type:'weapon', collected:false}
+      {x:11.5, y:4.5, type:'health', collected:false},
+      {x:9.5, y:2.5, type:'weapon', collected:false},
+      {x:5.5, y:5.5, type:'speed', collected:false},
+      {x:10.5, y:9.5, type:'invincible', collected:false}
+    ],
+    startX:1.5, startY:1.5
+  },
+  { // Level 4 - fast lost souls + imps
+    map: [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+      [1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+      [1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1],
+      [1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,1],
+      [1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,1],
+      [1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,1],
+      [1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1],
+      [1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ],
+    enemies: [
+      {x:4,y:4,type:'lost',hp:3,dead:false, speed:0.024},{x:12,y:3,type:'lost',hp:3,dead:false, speed:0.024},
+      {x:5,y:9,type:'imp',hp:2,dead:false, speed:0.018},{x:10,y:8,type:'imp',hp:2,dead:false, speed:0.018},
+      {x:7,y:6,type:'demon',hp:5,dead:false, speed:0.008},{x:3,y:7,type:'lost',hp:3,dead:false, speed:0.024}
+    ],
+    items: [
+      {x:6.5, y:2.5, type:'health', collected:false},
+      {x:9.5, y:11.5, type:'ammo', collected:false},
+      {x:13.5, y:8.5, type:'weapon', collected:false},
+      {x:2.5, y:3.5, type:'speed', collected:false}
+    ],
+    startX:1.5, startY:1.5
+  },
+  { // Level 5 - boss rush (mixed)
+    map: [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+      [1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ],
+    enemies: [
+      {x:6,y:6,type:'demon',hp:8,dead:false, speed:0.008},{x:9,y:6,type:'demon',hp:8,dead:false, speed:0.008},
+      {x:7,y:4,type:'imp',hp:2,dead:false, speed:0.018},{x:8,y:8,type:'imp',hp:2,dead:false, speed:0.018},
+      {x:5,y:9,type:'lost',hp:3,dead:false, speed:0.024},{x:10,y:9,type:'lost',hp:3,dead:false, speed:0.024},
+      {x:7.5,y:2.5,type:'demon',hp:10,dead:false, speed:0.006}
+    ],
+    items: [
+      {x:4.5, y:5.5, type:'health', collected:false},
+      {x:11.5, y:7.5, type:'ammo', collected:false},
+      {x:8.5, y:1.5, type:'weapon', collected:false},
+      {x:3.5, y:10.5, type:'invincible', collected:false},
+      {x:12.5, y:2.5, type:'speed', collected:false}
     ],
     startX:1.5, startY:1.5
   }
@@ -129,7 +195,7 @@ let currentLevelIdx = 0;
 let MAP = [], MW = 0, MH = 0;
 let px, py, pa = 0;
 let hp = 100, ammo = 50, score = 0;
-let damageMult = 1;   // 2x when golden gun picked up
+let damageMult = 1;
 let flash = 0;
 let enemies = [];
 let items = [];
@@ -138,6 +204,12 @@ let gameEnded = false;
 let levelClearing = false;
 let reloadCooldown = 0;
 
+// Power-up timers
+let speedTimer = 0;
+let invincibleTimer = 0;
+let baseSpeed = 0.07;
+let currentSpeed = baseSpeed;
+
 const c = document.getElementById('c');
 const ctx = c.getContext('2d');
 const hpSpan = document.getElementById('hp');
@@ -145,8 +217,20 @@ const ammoSpan = document.getElementById('am');
 const scoreSpan = document.getElementById('score');
 const levelSpan = document.getElementById('level');
 const damageSpan = document.getElementById('damage');
+const statusSpan = document.getElementById('statusIcons');
 
-// ===================== HELPER FUNCTIONS =====================
+function updateUI() {
+  hpSpan.textContent = Math.floor(Math.max(0, hp));
+  ammoSpan.textContent = ammo;
+  scoreSpan.textContent = score;
+  damageSpan.textContent = damageMult+"x";
+  let icons = "";
+  if (speedTimer > 0) icons += "⚡";
+  if (invincibleTimer > 0) icons += "🛡️";
+  statusSpan.textContent = icons;
+}
+
+// ===================== LOAD LEVEL =====================
 function loadLevel(index) {
   const lvl = LEVELS[index];
   MAP = lvl.map.map(row => [...row]);
@@ -159,17 +243,12 @@ function loadLevel(index) {
   pa = 0;
   if (hp <= 0) hp = 100;
   if (ammo <= 0) ammo = 50;
-  damageMult = 1;  // reset damage multiplier each level
+  damageMult = 1;
+  speedTimer = 0;
+  invincibleTimer = 0;
+  currentSpeed = baseSpeed;
   updateUI();
   levelSpan.textContent = (index+1);
-  damageSpan.textContent = damageMult+"x";
-}
-
-function updateUI() {
-  hpSpan.textContent = Math.floor(Math.max(0, hp));
-  ammoSpan.textContent = ammo;
-  scoreSpan.textContent = score;
-  damageSpan.textContent = damageMult+"x";
 }
 
 function solid(x,y) {
@@ -250,14 +329,13 @@ function shoot() {
 function reloadGun() {
   if (!gameActive) return;
   if (reloadCooldown > 0) return;
-  if (ammo >= 100) return; // max ammo limit
+  if (ammo >= 100) return;
   let gain = 10;
   ammo = Math.min(100, ammo + gain);
-  reloadCooldown = 30; // ~0.5 seconds at 60fps (30 frames)
+  reloadCooldown = 30;
   updateUI();
 }
 
-// Collect items
 function collectItems() {
   for (let i=0; i<items.length; i++) {
     let it = items[i];
@@ -266,14 +344,26 @@ function collectItems() {
     let dist = Math.sqrt(dx*dx+dy*dy);
     if (dist < 0.5) {
       it.collected = true;
-      if (it.type === 'ammo') {
-        ammo = Math.min(100, ammo + 15);
-        updateUI();
-      } else if (it.type === 'weapon') {
-        ammo = Math.min(100, ammo + 50);
-        damageMult = 2;
-        updateUI();
+      switch(it.type) {
+        case 'ammo':
+          ammo = Math.min(100, ammo + 15);
+          break;
+        case 'health':
+          hp = Math.min(100, hp + 25);
+          break;
+        case 'weapon':
+          ammo = Math.min(100, ammo + 50);
+          damageMult = 2;
+          break;
+        case 'speed':
+          speedTimer = 300; // ~5 seconds at 60fps
+          currentSpeed = baseSpeed * 1.8;
+          break;
+        case 'invincible':
+          invincibleTimer = 180; // 3 seconds
+          break;
       }
+      updateUI();
     }
   }
 }
@@ -343,6 +433,9 @@ function resetGame() {
   ammo = 50;
   score = 0;
   damageMult = 1;
+  speedTimer = 0;
+  invincibleTimer = 0;
+  currentSpeed = baseSpeed;
   gameActive = true;
   gameEnded = false;
   levelClearing = false;
@@ -357,21 +450,28 @@ function update() {
   if (!gameActive) return;
   if (K.L) pa -= 0.05;
   if (K.R) pa += 0.05;
-  let spd = 0.07;
   let nx = px, ny = py;
-  if (K.F) { nx += Math.cos(pa)*spd; ny += Math.sin(pa)*spd; }
-  if (K.B) { nx -= Math.cos(pa)*spd; ny -= Math.sin(pa)*spd; }
+  if (K.F) { nx += Math.cos(pa)*currentSpeed; ny += Math.sin(pa)*currentSpeed; }
+  if (K.B) { nx -= Math.cos(pa)*currentSpeed; ny -= Math.sin(pa)*currentSpeed; }
   if (!solid(nx, py)) px = nx;
   if (!solid(px, ny)) py = ny;
 
-  // enemy AI
+  // Update power-up timers
+  if (speedTimer > 0) {
+    speedTimer--;
+    if (speedTimer <= 0) currentSpeed = baseSpeed;
+  }
+  if (invincibleTimer > 0) invincibleTimer--;
+
+  // Enemy AI
   for (let i=0;i<enemies.length;i++) {
     let e = enemies[i];
     if (e.dead) continue;
     let dx = px - e.x, dy = py - e.y;
     let d = Math.sqrt(dx*dx+dy*dy);
-    if (d < 0.6) {
-      hp -= 0.4;
+    if (d < 0.6 && invincibleTimer <= 0) {
+      let dmg = (e.type === 'demon') ? 0.8 : 0.4;
+      hp -= dmg;
       if (hp <= 0) {
         hp = 0;
         gameActive = false;
@@ -383,7 +483,7 @@ function update() {
       updateUI();
     }
     if (d > 0.1) {
-      let s = 0.012;
+      let s = e.speed || 0.012;
       let ex = e.x + (dx/d)*s, ey = e.y + (dy/d)*s;
       if (!solid(ex, ey)) { e.x = ex; e.y = ey; }
     }
@@ -392,6 +492,7 @@ function update() {
   if (reloadCooldown > 0) reloadCooldown--;
   collectItems();
   checkLevelComplete();
+  updateUI();
 }
 
 function draw() {
@@ -407,7 +508,7 @@ function draw() {
   const RAYS = W;
   let zbuf = new Float32Array(W);
 
-  // walls
+  // Walls
   for (let i=0;i<RAYS;i++) {
     let angle = pa - FOV/2 + FOV*(i/RAYS);
     let hit = rayDDA(px,py,angle);
@@ -422,7 +523,7 @@ function draw() {
     ctx.fillRect(i, (H-wh)/2, 1, wh);
   }
 
-  // draw items (sorted by distance)
+  // Items
   let visibleItems = items.filter(it => !it.collected);
   let itemSprites = visibleItems.map(it => ({x:it.x, y:it.y, type:it.type}));
   itemSprites.sort((a,b) => {
@@ -448,17 +549,18 @@ function draw() {
       if (scx<0 || scx>=W) continue;
       if (zbuf[scx] <= d) continue;
       ctx.globalAlpha = br;
-      if (it.type === 'ammo') {
-        ctx.fillStyle = '#ffcc00';  // gold ammo box
-      } else {
-        ctx.fillStyle = '#ff4400';  // red-orange weapon orb
-      }
+      if (it.type === 'ammo') ctx.fillStyle = '#ffcc00';
+      else if (it.type === 'health') ctx.fillStyle = '#ff6666';
+      else if (it.type === 'weapon') ctx.fillStyle = '#ff4400';
+      else if (it.type === 'speed') ctx.fillStyle = '#88ff88';
+      else if (it.type === 'invincible') ctx.fillStyle = '#88aaff';
+      else ctx.fillStyle = '#ffffff';
       ctx.fillRect(scx, (H-sh)/2 + sh*0.2, 1, sh*0.6);
       ctx.globalAlpha = 1;
     }
   }
 
-  // enemies
+  // Enemies
   let sorted = [...enemies].filter(e=>!e.dead).sort((a,b)=>{
     let da = (a.x-px)*(a.x-px)+(a.y-py)*(a.y-py);
     let db = (b.x-px)*(b.x-px)+(b.y-py)*(b.y-py);
@@ -477,16 +579,24 @@ function draw() {
     let sw = sh*0.7;
     let x0 = Math.floor(sx - sw/2);
     let br = Math.max(0.2, 1-d/10);
+    let color;
+    if (e.type === 'imp') color = '#c06000';
+    else if (e.type === 'demon') color = '#8b3c1c';
+    else color = '#aa55ff';
     for (let si=0; si<Math.ceil(sw); si++) {
       let scx = x0+si;
       if (scx<0 || scx>=W) continue;
       if (zbuf[scx] <= d) continue;
       let rx = si/sw;
       ctx.globalAlpha = br;
-      if (rx>0.1 && rx<0.9) { ctx.fillStyle='#9b3000'; ctx.fillRect(scx,(H-sh)/2+sh*0.3,1,sh*0.5); }
-      if (rx>0.2 && rx<0.8) { ctx.fillStyle='#c85010'; ctx.fillRect(scx,(H-sh)/2,1,sh*0.3); }
-      if ((rx>0.25&&rx<0.38)||(rx>0.62&&rx<0.75)) { ctx.fillStyle='#ff2200'; ctx.fillRect(scx,(H-sh)/2+sh*0.08,1,sh*0.1); }
-      if (rx>0.15&&rx<0.45||rx>0.55&&rx<0.85) { ctx.fillStyle='#6b1500'; ctx.fillRect(scx,(H-sh)/2+sh*0.8,1,sh*0.2); }
+      ctx.fillStyle = color;
+      ctx.fillRect(scx, (H-sh)/2, 1, sh);
+      if (e.type === 'lost') {
+        ctx.fillStyle = '#ff66ff';
+        ctx.fillRect(scx, (H-sh)/2+sh*0.3, 1, sh*0.2);
+      } else {
+        if (rx>0.2 && rx<0.8) { ctx.fillStyle = '#ff4422'; ctx.fillRect(scx,(H-sh)/2+sh*0.2,1,sh*0.3); }
+      }
       ctx.globalAlpha = 1;
     }
   }
@@ -520,7 +630,7 @@ function draw() {
   ctx.moveTo(W/2, H/2-18); ctx.lineTo(W/2, H/2+18);
   ctx.stroke();
 
-  if (hp<30) { ctx.fillStyle='rgba(200,0,0,0.22)'; ctx.fillRect(0,0,W,H); }
+  if (hp<30 && invincibleTimer<=0) { ctx.fillStyle='rgba(200,0,0,0.22)'; ctx.fillRect(0,0,W,H); }
   if (hp<=0) {
     ctx.fillStyle='rgba(0,0,0,0.92)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#f00'; ctx.font='bold 52px Arial'; ctx.textAlign='center';
