@@ -3,303 +3,574 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Field Inspector Route Pro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0f1923; font-family: 'Courier New', monospace; color: #e2f0e8; }
-  input, select, button { font-family: 'Courier New', monospace; }
-  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0f1923; }
-  ::-webkit-scrollbar-thumb { background: #22c55e44; border-radius: 2px; }
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+–bg: #080e14;
+–surface: #0d1820;
+–surface2: #111f2a;
+–green: #00e676;
+–green-dim: #00e67622;
+–blue: #29b6f6;
+–blue-dim: #29b6f622;
+–orange: #ff9800;
+–orange-dim: #ff980022;
+–purple: #ce93d8;
+–purple-dim: #ce93d822;
+–red: #ef5350;
+–red-dim: #ef535022;
+–text: #e0f2e9;
+–muted: #4a6572;
+–border: #1a2f3a;
+}
+
+- { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:var(–bg); font-family:‘Share Tech Mono’,monospace; color:var(–text); min-height:100vh; }
+  button, input, select, textarea { font-family:‘Share Tech Mono’,monospace; }
+  ::-webkit-scrollbar { width:3px; }
+  ::-webkit-scrollbar-thumb { background:var(–green-dim); border-radius:2px; }
+
+/* HEADER */
+.header {
+background: linear-gradient(135deg, #0a1a0e 0%, #0a1624 100%);
+border-bottom: 1px solid var(–green);
+padding: 16px 16px 12px;
+position: sticky; top:0; z-index:100;
+box-shadow: 0 4px 20px rgba(0,230,118,0.1);
+}
+.header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+.header-label { font-size:9px; letter-spacing:4px; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
+.header-title { font-size:22px; font-weight:700; font-family:‘Rajdhani’,sans-serif; letter-spacing:2px; }
+.header-right { text-align:right; }
+.survey-count { font-size:28px; font-weight:700; color:var(–green); font-family:‘Rajdhani’,sans-serif; line-height:1; }
+.survey-rate { font-size:10px; color:var(–green); opacity:0.7; }
+.name-row { display:flex; align-items:center; gap:6px; margin-top:2px; }
+.name-display { font-size:11px; color:#86efac; cursor:pointer; }
+.name-input { background:rgba(0,0,0,0.4); border:1px solid var(–border); border-radius:4px; color:var(–text); font-size:11px; padding:3px 8px; width:160px; outline:none; }
+
+.stats-row { display:flex; gap:8px; }
+.stat-box { flex:1; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 10px; }
+.stat-label { font-size:8px; letter-spacing:2px; margin-bottom:2px; }
+.stat-value { font-size:14px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
+
+/* TABS */
+.tabs { display:flex; background:#0a1218; border-bottom:1px solid var(–border); }
+.tab { flex:1; padding:10px 4px; background:none; border:none; border-bottom:2px solid transparent; color:var(–muted); font-size:9px; letter-spacing:1px; font-weight:bold; cursor:pointer; transition:all 0.2s; font-family:‘Rajdhani’,sans-serif; }
+.tab.active { border-bottom-color:var(–green); color:var(–green); }
+
+/* CONTENT */
+.content { padding:14px; max-width:600px; margin:0 auto; }
+
+/* ACTION BUTTONS */
+.action-row { display:flex; gap:10px; margin-bottom:14px; }
+.action-btn { flex:1; padding:13px; border-radius:10px; border:1px solid; font-size:10px; letter-spacing:2px; font-weight:bold; cursor:pointer; font-family:‘Rajdhani’,sans-serif; transition:all 0.2s; }
+.btn-optimize { background:linear-gradient(135deg,#003d1a,#005724); border-color:var(–green); color:var(–green); }
+.btn-route { background:linear-gradient(135deg,#0a1a2e,#0d2548); border-color:var(–blue); color:var(–blue); }
+
+/* JOB CARDS */
+.job-card { background:var(–surface); border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid var(–border); position:relative; overflow:hidden; transition:opacity 0.3s; }
+.job-card.done { opacity:0.4; }
+.job-card .side-bar { position:absolute; left:0; top:0; bottom:0; width:3px; }
+.job-inner { margin-left:10px; display:flex; justify-content:space-between; gap:8px; }
+.job-info { flex:1; }
+.job-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; align-items:center; }
+.badge { font-size:9px; border-radius:4px; padding:2px 7px; letter-spacing:1px; font-weight:bold; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
+.priority-dot { font-size:9px; }
+.job-address { font-size:12px; color:var(–text); margin-bottom:2px; }
+.job-meta { font-size:10px; color:var(–muted); margin-bottom:2px; }
+.job-type { font-size:10px; color:var(–green); opacity:0.6; margin-bottom:4px; }
+.job-pay { font-size:16px; font-weight:bold; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
+.job-pay.fi-pay { color:var(–purple); }
+
+.job-actions { display:flex; flex-direction:column; gap:5px; }
+.jbtn { border-radius:6px; padding:5px 9px; font-size:9px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; font-weight:bold; transition:all 0.15s; background:rgba(0,0,0,0.3); white-space:nowrap; }
+.jbtn:active { transform:scale(0.95); }
+
+/* FI BADGE */
+.fi-only-badge { background:var(–purple-dim); border:1px solid var(–purple); color:var(–purple); font-size:9px; border-radius:4px; padding:2px 7px; letter-spacing:1px; font-family:‘Rajdhani’,sans-serif; }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal { background:#0a1a14; border:1px solid var(–green); border-radius:16px; padding:22px; max-width:380px; width:100%; }
+.modal-label { font-size:9px; letter-spacing:3px; color:var(–green); margin-bottom:4px; font-family:‘Rajdhani’,sans-serif; }
+.modal-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
+.modal-sub { font-size:11px; margin-bottom:14px; }
+.msg-preview { background:rgba(255,255,255,0.04); border-radius:10px; padding:12px; font-size:12px; color:#d1fae5; line-height:1.7; margin-bottom:16px; border:1px solid var(–border); }
+.modal-btns { display:flex; gap:10px; }
+.modal-cancel { flex:1; padding:11px; border-radius:8px; background:var(–red-dim); border:1px solid var(–red); color:var(–red); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
+.modal-send { flex:2; padding:11px; border-radius:8px; background:linear-gradient(135deg,#003d1a,#005724); border:1px solid var(–green); color:var(–green); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
+
+/* FORM */
+.form-card { background:var(–surface); border:1px solid var(–green-dim); border-radius:12px; padding:20px; }
+.form-label { font-size:9px; letter-spacing:2px; color:#86efac; margin-bottom:5px; font-family:‘Rajdhani’,sans-serif; }
+.form-input { width:100%; padding:10px 12px; background:rgba(0,0,0,0.4); border:1px solid var(–border); border-radius:6px; color:var(–text); font-size:13px; outline:none; margin-bottom:12px; font-family:‘Share Tech Mono’,monospace; }
+.form-input:focus { border-color:var(–green); }
+.toggle-group { display:flex; gap:8px; margin-bottom:12px; }
+.toggle-btn { flex:1; padding:10px; border-radius:6px; border:1px solid var(–border); background:rgba(0,0,0,0.3); color:var(–muted); cursor:pointer; font-size:11px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; transition:all 0.2s; }
+.toggle-btn.active-allstate { background:var(–blue-dim); border-color:var(–blue); color:var(–blue); }
+.toggle-btn.active-farmers { background:var(–orange-dim); border-color:var(–orange); color:var(–orange); }
+.toggle-btn.active-fi { background:var(–purple-dim); border-color:var(–purple); color:var(–purple); }
+.toggle-btn.active-high { background:rgba(239,83,80,0.15); border-color:var(–red); color:var(–red); }
+.toggle-btn.active-medium { background:var(–orange-dim); border-color:var(–orange); color:var(–orange); }
+.toggle-btn.active-low { background:rgba(74,101,114,0.2); border-color:var(–muted); color:var(–muted); }
+.fi-notice { background:var(–purple-dim); border:1px solid var(–purple); border-radius:8px; padding:10px 12px; font-size:11px; color:var(–purple); margin-bottom:12px; line-height:1.5; }
+.add-btn { width:100%; padding:14px; border-radius:10px; background:linear-gradient(135deg,#003d1a,#005724); border:1px solid var(–green); color:var(–green); font-size:13px; letter-spacing:3px; font-weight:bold; cursor:pointer; font-family:‘Rajdhani’,sans-serif; box-shadow:0 0 16px rgba(0,230,118,0.2); }
+
+/* STATS */
+.stats-card { background:var(–surface); border:1px solid var(–green-dim); border-radius:12px; padding:20px; margin-bottom:12px; }
+.stats-title { font-size:10px; letter-spacing:3px; color:var(–green); margin-bottom:16px; font-family:‘Rajdhani’,sans-serif; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.stat-name { color:#86efac; font-size:13px; }
+.stat-sub { font-size:10px; color:var(–muted); }
+.stat-amount { font-weight:bold; font-size:18px; font-family:‘Rajdhani’,sans-serif; }
+.divider { height:1px; background:var(–border); margin:10px 0; }
+.progress-bar-bg { background:var(–border); border-radius:100px; height:7px; overflow:hidden; margin-top:5px; }
+.progress-bar-fill { height:100%; border-radius:100px; transition:width 0.5s; }
+
+/* TEXT TAB */
+.carrier-section { background:var(–surface); border-radius:12px; padding:16px; margin-bottom:12px; }
+.carrier-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.carrier-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
+.carrier-tag { font-size:9px; border-radius:5px; padding:3px 10px; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
+.text-job-row { display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 12px; border:1px solid var(–border); margin-bottom:8px; }
+.text-job-name { font-size:12px; }
+.text-job-addr { font-size:10px; color:var(–muted); }
+.text-send-btn { border-radius:6px; padding:7px 12px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; font-weight:bold; letter-spacing:1px; }
+.fi-section { background:var(–surface); border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid var(–purple-dim); }
+.fi-job-row { background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 12px; border:1px solid var(–purple-dim); margin-bottom:8px; }
+.fi-no-contact { font-size:10px; color:var(–purple); margin-top:3px; }
+
+.empty-msg { text-align:center; color:var(–muted); font-size:12px; padding:12px; }
+
+.section-header { font-size:10px; letter-spacing:3px; color:var(–green); margin-bottom:12px; font-family:‘Rajdhani’,sans-serif; }
 </style>
+
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useCallback } = React;
-const PAY = 14.50;
-const SAMPLE = [
-  { id:1, address:"1234 W 4700 S, Taylorsville, UT", client:"Allstate", contactName:"John Smith", contactPhone:"8015550101", priority:"high", claimNumber:"ALL-2024-0091" },
-  { id:2, address:"892 E 3300 S, Salt Lake City, UT", client:"Farmers", contactName:"Maria Lopez", contactPhone:"8015550182", priority:"high", claimNumber:"FRM-2024-0342" },
-  { id:3, address:"3401 S 900 W, South Salt Lake, UT", client:"Allstate", contactName:"Derek Hines", contactPhone:"8015550263", priority:"medium", claimNumber:"ALL-2024-0105" },
-  { id:4, address:"5620 S Redwood Rd, Murray, UT", client:"Farmers", contactName:"Tanya Brooks", contactPhone:"8015550374", priority:"medium", claimNumber:"FRM-2024-0388" },
-  { id:5, address:"410 E 12300 S, Draper, UT", client:"Allstate", contactName:"Carl Webb", contactPhone:"8015550445", priority:"low", claimNumber:"ALL-2024-0117" },
-  { id:6, address:"2245 W 7800 S, West Jordan, UT", client:"Farmers", contactName:"Sandra Lee", contactPhone:"8015550556", priority:"medium", claimNumber:"FRM-2024-0401" },
-];
-const CC = { Allstate:"#60a5fa", Farmers:"#fb923c" };
-const PO = { high:0, medium:1, low:2 };
-const TMPL = {
-  Allstate:(j,n)=>`Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`,
-  Farmers:(j,n)=>`Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`,
-};
-const IS = { width:"100%", padding:"10px 12px", background:"rgba(0,0,0,0.4)", border:"1px solid #1e3a2e", borderRadius:"6px", color:"#d1fae5", fontSize:"14px", outline:"none", boxSizing:"border-box" };
 
-function App() {
-const [jobs, setJobs] = useState(SAMPLE);
-const [done, setDone] = useState([]);
-const [tab, setTab] = useState(“route”);
-const [optimizing, setOpt] = useState(false);
-const [optimized, setOptd] = useState(false);
-const [name, setName] = useState(“Your Name”);
-const [editName, setEditName] = useState(false);
-const [modal, setModal] = useState(null);
-const [nj, setNj] = useState({ address:””, client:“Allstate”, contactName:””, contactPhone:””, claimNumber:””, priority:“medium” });
+<div id="app"></div>
 
-const pending = jobs.filter(j=>!done.includes(j.id));
-const completed = jobs.filter(j=>done.includes(j.id));
-const earned = completed.length * PAY;
-const pendingPay = pending.length * PAY;
+<script>
+const PAY = { Allstate: 14.50, Farmers: 14.50, 'FI-NC': 14.50, 'FI-DH': 14.50 };
+const CC = { Allstate: '#29b6f6', Farmers: '#ff9800', 'FI-NC': '#ce93d8', 'FI-DH': '#ffd54f' };
+const CLIENT_LABELS = { Allstate: 'Allstate', Farmers: 'Farmers', 'FI-NC': 'FI — No Contact', 'FI-DH': 'FI — Door Hanger' };
 
-const optimize = useCallback(()=>{
-setOpt(true);
-setTimeout(()=>{
-setJobs(p=>[…p].sort((a,b)=>{
-if(done.includes(a.id)) return 1;
-if(done.includes(b.id)) return -1;
-return PO[a.priority]-PO[b.priority];
-}));
-setOptd(true); setOpt(false);
-},1200);
-},[jobs,done]);
-
-const toggle = id => setDone(p=>p.includes(id)?p.filter(x=>x!==id):[…p,id]);
-const remove = id => { setJobs(p=>p.filter(j=>j.id!==id)); setDone(p=>p.filter(x=>x!==id)); };
-const maps = addr => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(addr)}`,”_blank”);
-const fullRoute = () => {
-const p=jobs.filter(j=>!done.includes(j.id));
-if(!p.length) return;
-window.open(`https://www.google.com/maps/dir/${p.map(j=>encodeURIComponent(j.address)).join("/")}`, “_blank”);
-};
-const sms = j => {
-const msg=TMPL[j.client](j,name);
-window.open(`sms:${j.contactPhone.replace(/\D/g,"")}?body=${encodeURIComponent(msg)}`,”_blank”);
-setModal(null);
-};
-const addJob = () => {
-if(!nj.address||!nj.contactName) return;
-setJobs(p=>[…p,{…nj,id:Date.now(),claimNumber:nj.claimNumber||`${nj.client.slice(0,3).toUpperCase()}-${Date.now()}`}]);
-setNj({address:””,client:“Allstate”,contactName:””,contactPhone:””,claimNumber:””,priority:“medium”});
-setTab(“route”); setOptd(false);
+const TEMPLATES = {
+  Allstate: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`,
+  Farmers: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`,
 };
 
-const s = (color,size,extra={}) => ({…extra, color, fontSize:size||“inherit”});
-const btn = (bg,border,color,extra={}) => ({…extra, background:bg, border:`1px solid ${border}`, borderRadius:“8px”, color, cursor:“pointer”, fontFamily:”‘Courier New’,monospace”});
+let state = {
+  jobs: [
+    { id:1, address:"1234 W 4700 S, Taylorsville, UT", client:"Allstate", contactName:"John Smith", contactPhone:"8015550101", priority:"high", claimNumber:"ALL-2024-0091" },
+    { id:2, address:"892 E 3300 S, Salt Lake City, UT", client:"Farmers", contactName:"Maria Lopez", contactPhone:"8015550182", priority:"high", claimNumber:"FRM-2024-0342" },
+    { id:3, address:"3401 S 900 W, South Salt Lake, UT", client:"FI-NC", contactName:"", contactPhone:"", priority:"medium", claimNumber:"FI-2024-0055" },
+    { id:4, address:"5620 S Redwood Rd, Murray, UT", client:"Farmers", contactName:"Tanya Brooks", contactPhone:"8015550374", priority:"medium", claimNumber:"FRM-2024-0388" },
+    { id:5, address:"410 E 12300 S, Draper, UT", client:"FI-DH", contactName:"", contactPhone:"", priority:"low", claimNumber:"FI-2024-0061" },
+    { id:6, address:"2245 W 7800 S, West Jordan, UT", client:"Allstate", contactName:"Sandra Lee", contactPhone:"8015550556", priority:"medium", claimNumber:"ALL-2024-0117" },
+  ],
+  done: [],
+  tab: 'route',
+  name: 'Your Name',
+  editName: false,
+  modal: null,
+  optimized: false,
+  newJob: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' }
+};
 
-return (
-<div style={{minHeight:“100vh”, background:“linear-gradient(135deg,#0f1923 0%,#1a2744 50%,#0f2518 100%)”}}>
+function isFI(client) { return client === 'FI-NC' || client === 'FI-DH'; }
 
-```
-  {modal && (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-      <div style={{background:"#0d1f12",border:"1px solid #22c55e",borderRadius:"14px",padding:"22px",maxWidth:"380px",width:"100%"}}>
-        <div style={{fontSize:"10px",letterSpacing:"3px",color:"#22c55e",marginBottom:"4px"}}>PREVIEW TEXT MESSAGE</div>
-        <div style={{fontSize:"15px",fontWeight:"bold",marginBottom:"1px"}}>{modal.contactName}</div>
-        <div style={{fontSize:"12px",color:CC[modal.client],marginBottom:"14px"}}>{modal.client} · {modal.contactPhone}</div>
-        <div style={{background:"rgba(255,255,255,0.05)",borderRadius:"10px",padding:"12px",fontSize:"12px",color:"#d1fae5",lineHeight:"1.6",marginBottom:"16px",border:"1px solid #1e3a2e"}}>
-          {TMPL[modal.client](modal,name)}
-        </div>
-        <div style={{display:"flex",gap:"10px"}}>
-          <button onClick={()=>setModal(null)} style={{...btn("rgba(239,68,68,0.15)","#ef4444","#ef4444"),flex:1,padding:"10px",fontSize:"12px"}}>CANCEL</button>
-          <button onClick={()=>sms(modal)} style={{...btn("linear-gradient(135deg,#14532d,#166534)","#22c55e","#22c55e"),flex:2,padding:"10px",fontSize:"12px",letterSpacing:"2px",fontWeight:"bold"}}>📱 SEND TEXT</button>
-        </div>
-      </div>
-    </div>
-  )}
-
-  <div style={{background:"linear-gradient(90deg,#14532d,#1e3a5f)",padding:"20px 24px 16px",borderBottom:"2px solid #22c55e",position:"sticky",top:0,zIndex:100}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div>
-        <div style={{fontSize:"10px",letterSpacing:"4px",color:"#22c55e"}}>FIELD INSPECTOR</div>
-        <div style={{fontSize:"20px",fontWeight:"bold"}}>ROUTE PRO</div>
-        {editName
-          ? <input autoFocus value={name} onChange={e=>setName(e.target.value)} onBlur={()=>setEditName(false)} style={{...IS,fontSize:"11px",padding:"3px 8px",marginTop:"4px",width:"160px"}}/>
-          : <div onClick={()=>setEditName(true)} style={{fontSize:"11px",color:"#86efac",cursor:"pointer",marginTop:"3px"}}>✏️ {name}</div>
-        }
-      </div>
-      <div style={{textAlign:"right"}}>
-        <div style={{fontSize:"10px",color:"#86efac"}}>EXTERIOR SURVEYS</div>
-        <div style={{fontSize:"26px",fontWeight:"bold",color:"#22c55e"}}>{jobs.length}</div>
-        <div style={{fontSize:"11px",color:"#86efac"}}>${PAY.toFixed(2)} / survey</div>
-      </div>
-    </div>
-    <div style={{display:"flex",gap:"10px",marginTop:"12px"}}>
-      {[{l:"EARNED",v:`$${earned.toFixed(2)}`,c:"#22c55e"},{l:"PENDING",v:`$${pendingPay.toFixed(2)}`,c:"#60a5fa"},{l:"DONE",v:`${done.length}/${jobs.length}`,c:"#fb923c"}].map(s=>(
-        <div key={s.l} style={{flex:1,background:"rgba(0,0,0,0.3)",borderRadius:"8px",padding:"8px 10px",border:`1px solid ${s.c}33`}}>
-          <div style={{fontSize:"9px",letterSpacing:"2px",color:s.c,opacity:0.8}}>{s.l}</div>
-          <div style={{fontSize:"14px",fontWeight:"bold",color:s.c}}>{s.v}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-
-  <div style={{display:"flex",borderBottom:"1px solid #1e3a2e",background:"#0d1f12"}}>
-    {[{k:"route",l:"🗺 ROUTE"},{k:"text",l:"📱 TEXTS"},{k:"add",l:"➕ ADD"},{k:"stats",l:"📊 STATS"}].map(t=>(
-      <button key={t.k} onClick={()=>setTab(t.k)} style={{flex:1,padding:"11px 4px",background:"none",border:"none",borderBottom:tab===t.k?"2px solid #22c55e":"2px solid transparent",color:tab===t.k?"#22c55e":"#6b7280",fontSize:"10px",letterSpacing:"1px",fontWeight:"bold",cursor:"pointer"}}>{t.l}</button>
-    ))}
-  </div>
-
-  <div style={{padding:"16px",maxWidth:"600px",margin:"0 auto"}}>
-
-    {tab==="route" && (
-      <div>
-        <div style={{display:"flex",gap:"10px",marginBottom:"16px"}}>
-          <button onClick={optimize} disabled={optimizing} style={{...btn(optimizing?"#1e3a2e":"linear-gradient(135deg,#14532d,#166534)","#22c55e","#22c55e"),flex:1,padding:"12px",fontSize:"11px",letterSpacing:"2px",fontWeight:"bold",boxShadow:optimizing?"none":"0 0 12px #22c55e44"}}>
-            {optimizing?"OPTIMIZING...":optimized?"✓ OPTIMIZED":"⚡ OPTIMIZE"}
-          </button>
-          <button onClick={fullRoute} style={{...btn("linear-gradient(135deg,#1e3a5f,#1e40af)","#60a5fa","#60a5fa"),flex:1,padding:"12px",fontSize:"11px",letterSpacing:"2px",fontWeight:"bold"}}>🧭 FULL ROUTE</button>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-          {jobs.map((job,idx)=>{
-            const d=done.includes(job.id), cc=CC[job.client]||"#22c55e";
-            return (
-              <div key={job.id} style={{background:d?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.04)",border:d?"1px solid #374151":`1px solid ${cc}44`,borderRadius:"10px",padding:"14px",opacity:d?0.5:1,position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",left:0,top:0,bottom:0,width:"3px",background:d?"#374151":cc}}/>
-                <div style={{marginLeft:"8px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"4px"}}>
-                      <span style={{fontSize:"10px",background:`${cc}22`,color:cc,border:`1px solid ${cc}`,borderRadius:"4px",padding:"2px 7px",letterSpacing:"1px",fontWeight:"bold"}}>{job.client.toUpperCase()}</span>
-                      <span style={{fontSize:"9px",color:job.priority==="high"?"#f87171":job.priority==="medium"?"#fb923c":"#6b7280"}}>{job.priority==="high"?"● HIGH":job.priority==="medium"?"● MED":"○ LOW"}</span>
-                    </div>
-                    <div style={{fontSize:"12px",color:d?"#6b7280":"#d1fae5",marginBottom:"2px"}}>#{String(idx+1).padStart(2,"0")} — {job.address}</div>
-                    <div style={{fontSize:"10px",color:"#6b7280",marginBottom:"2px"}}>{job.claimNumber} · {job.contactName}</div>
-                    <div style={{fontSize:"10px",color:"#4ade8088",marginBottom:"3px"}}>🏠 EXTERIOR ONLY</div>
-                    <div style={{fontSize:"16px",fontWeight:"bold",color:d?"#6b7280":"#22c55e"}}>${PAY.toFixed(2)}</div>
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column",gap:"5px",marginLeft:"8px"}}>
-                    <button onClick={()=>maps(job.address)} style={{...btn("rgba(96,165,250,0.15)","#60a5fa44","#60a5fa",{borderRadius:"6px"}),padding:"5px 9px",fontSize:"10px"}}>📍 MAP</button>
-                    <button onClick={()=>setModal(job)} style={{...btn(`${cc}15`,`${cc}44`,cc,{borderRadius:"6px"}),padding:"5px 9px",fontSize:"10px"}}>📱 TEXT</button>
-                    <button onClick={()=>toggle(job.id)} style={{...btn(d?"rgba(34,197,94,0.2)":"rgba(0,0,0,0.3)",d?"#22c55e":"#374151",d?"#22c55e":"#6b7280",{borderRadius:"6px"}),padding:"5px 9px",fontSize:"10px"}}>{d?"✓ DONE":"○ DONE"}</button>
-                    <button onClick={()=>remove(job.id)} style={{...btn("rgba(239,68,68,0.1)","#ef444433","#ef4444",{borderRadius:"6px"}),padding:"5px 9px",fontSize:"10px"}}>✕</button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    {tab==="text" && (
-      <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
-        <div style={{fontSize:"11px",letterSpacing:"3px",color:"#22c55e"}}>TEXT CLIENTS BY CARRIER</div>
-        {["Allstate","Farmers"].map(client=>{
-          const cj=jobs.filter(j=>j.client===client&&!done.includes(j.id)), color=CC[client];
-          return (
-            <div key={client} style={{background:"rgba(255,255,255,0.04)",border:`1px solid ${color}33`,borderRadius:"12px",padding:"16px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
-                <div>
-                  <div style={{fontSize:"15px",fontWeight:"bold",color}}>{client}</div>
-                  <div style={{fontSize:"11px",color:"#6b7280"}}>{cj.length} pending · exterior surveys</div>
-                </div>
-                <div style={{fontSize:"10px",background:`${color}22`,color,border:`1px solid ${color}`,borderRadius:"6px",padding:"4px 10px"}}>EXTERIOR ONLY</div>
-              </div>
-              {cj.length===0
-                ? <div style={{textAlign:"center",color:"#6b7280",fontSize:"12px",padding:"10px"}}>All {client} surveys complete ✓</div>
-                : cj.map(job=>(
-                  <div key={job.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"rgba(0,0,0,0.3)",borderRadius:"8px",padding:"10px 12px",border:"1px solid #1e3a2e",marginBottom:"8px"}}>
-                    <div>
-                      <div style={{fontSize:"12px",color:"#d1fae5"}}>{job.contactName}</div>
-                      <div style={{fontSize:"10px",color:"#6b7280"}}>{job.address.split(",")[0]}</div>
-                      <div style={{fontSize:"10px",color:"#6b7280"}}>{job.claimNumber}</div>
-                    </div>
-                    <button onClick={()=>setModal(job)} style={{...btn(`${color}22`,color,color,{borderRadius:"6px"}),padding:"7px 12px",fontSize:"11px",fontWeight:"bold"}}>📱 TEXT</button>
-                  </div>
-                ))
-              }
-            </div>
-          );
-        })}
-      </div>
-    )}
-
-    {tab==="add" && (
-      <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid #22c55e33",borderRadius:"12px",padding:"20px"}}>
-        <div style={{fontSize:"13px",letterSpacing:"3px",color:"#22c55e",marginBottom:"20px",fontWeight:"bold"}}>NEW INSPECTION ORDER</div>
-        {[{l:"PROPERTY ADDRESS",k:"address",ph:"123 Main St, Salt Lake City, UT"},{l:"CONTACT NAME",k:"contactName",ph:"Homeowner name"},{l:"CONTACT PHONE",k:"contactPhone",ph:"8015550100"},{l:"CLAIM NUMBER",k:"claimNumber",ph:"e.g. ALL-2024-0200"}].map(f=>(
-          <div key={f.k} style={{marginBottom:"12px"}}>
-            <div style={{fontSize:"10px",letterSpacing:"2px",color:"#86efac",marginBottom:"5px"}}>{f.l}</div>
-            <input type="text" placeholder={f.ph} value={nj[f.k]} onChange={e=>setNj(p=>({...p,[f.k]:e.target.value}))} style={IS}/>
-          </div>
-        ))}
-        <div style={{marginBottom:"12px"}}>
-          <div style={{fontSize:"10px",letterSpacing:"2px",color:"#86efac",marginBottom:"5px"}}>CARRIER</div>
-          <div style={{display:"flex",gap:"8px"}}>
-            {["Allstate","Farmers"].map(c=>(
-              <button key={c} onClick={()=>setNj(p=>({...p,client:c}))} style={{...btn(nj.client===c?`${CC[c]}22`:"rgba(0,0,0,0.3)",nj.client===c?CC[c]:"#374151",nj.client===c?CC[c]:"#6b7280",{borderRadius:"6px"}),flex:1,padding:"10px",fontSize:"12px",fontWeight:"bold"}}>{c}</button>
-            ))}
-          </div>
-        </div>
-        <div style={{marginBottom:"16px"}}>
-          <div style={{fontSize:"10px",letterSpacing:"2px",color:"#86efac",marginBottom:"5px"}}>PRIORITY</div>
-          <div style={{display:"flex",gap:"8px"}}>
-            {["high","medium","low"].map(p=>(
-              <button key={p} onClick={()=>setNj(prev=>({...prev,priority:p}))} style={{...btn(nj.priority===p?"rgba(34,197,94,0.2)":"rgba(0,0,0,0.3)",nj.priority===p?"#22c55e":"#374151",nj.priority===p?"#22c55e":"#6b7280",{borderRadius:"6px"}),flex:1,padding:"8px",fontSize:"10px",fontWeight:"bold",textTransform:"uppercase"}}>{p}</button>
-            ))}
-          </div>
-        </div>
-        <div style={{background:"rgba(34,197,94,0.08)",border:"1px solid #22c55e33",borderRadius:"8px",padding:"10px",marginBottom:"16px",fontSize:"11px",color:"#86efac"}}>
-          🏠 EXTERIOR SURVEY · ${PAY.toFixed(2)} fixed rate · Auto-generates text template
-        </div>
-        <button onClick={addJob} style={{...btn("linear-gradient(135deg,#14532d,#166534)","#22c55e","#22c55e"),width:"100%",padding:"14px",fontSize:"13px",letterSpacing:"3px",fontWeight:"bold",boxShadow:"0 0 16px #22c55e33"}}>+ ADD INSPECTION</button>
-      </div>
-    )}
-
-    {tab==="stats" && (
-      <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid #22c55e33",borderRadius:"12px",padding:"20px"}}>
-          <div style={{fontSize:"11px",letterSpacing:"3px",color:"#22c55e",marginBottom:"16px"}}>EARNINGS TODAY</div>
-          {[{l:"Completed",sub:`${done.length} surveys`,v:`$${earned.toFixed(2)}`,c:"#22c55e"},{l:"Pending",sub:`${pending.length} surveys`,v:`$${pendingPay.toFixed(2)}`,c:"#60a5fa"}].map(s=>(
-            <div key={s.l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
-              <div><div style={{color:"#86efac"}}>{s.l}</div><div style={{fontSize:"11px",color:"#6b7280"}}>{s.sub}</div></div>
-              <div style={{color:s.c,fontWeight:"bold",fontSize:"18px"}}>{s.v}</div>
-            </div>
-          ))}
-          <div style={{height:"1px",background:"#1e3a2e",margin:"10px 0"}}/>
-          <div style={{display:"flex",justifyContent:"space-between"}}>
-            <span style={{color:"#d1fae5",fontWeight:"bold"}}>Total Day</span>
-            <span style={{color:"#f9fafb",fontWeight:"bold",fontSize:"22px"}}>${(jobs.length*PAY).toFixed(2)}</span>
-          </div>
-        </div>
-        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid #22c55e33",borderRadius:"12px",padding:"20px"}}>
-          <div style={{fontSize:"11px",letterSpacing:"3px",color:"#22c55e",marginBottom:"16px"}}>BY CARRIER</div>
-          {["Allstate","Farmers"].map(client=>{
-            const total=jobs.filter(j=>j.client===client).length;
-            const d=jobs.filter(j=>j.client===client&&done.includes(j.id)).length;
-            const color=CC[client];
-            return (
-              <div key={client} style={{marginBottom:"14px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:"5px"}}>
-                  <span style={{color,fontWeight:"bold"}}>{client}</span>
-                  <span style={{color:"#86efac"}}>{d}/{total} · ${(total*PAY).toFixed(2)}</span>
-                </div>
-                <div style={{background:"#1e3a2e",borderRadius:"100px",height:"6px"}}>
-                  <div style={{height:"100%",borderRadius:"100px",width:`${total?(d/total)*100:0}%`,background:color,transition:"width 0.5s"}}/>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid #22c55e33",borderRadius:"12px",padding:"20px"}}>
-          <div style={{fontSize:"11px",letterSpacing:"3px",color:"#22c55e",marginBottom:"12px"}}>OVERALL PROGRESS</div>
-          <div style={{background:"#1e3a2e",borderRadius:"100px",height:"12px",overflow:"hidden"}}>
-            <div style={{height:"100%",borderRadius:"100px",width:`${jobs.length?(done.length/jobs.length)*100:0}%`,background:"linear-gradient(90deg,#22c55e,#86efac)",transition:"width 0.5s"}}/>
-          </div>
-          <div style={{textAlign:"right",marginTop:"6px",color:"#86efac",fontSize:"12px"}}>
-            {jobs.length?Math.round((done.length/jobs.length)*100):0}% complete
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-</div>
-```
-
-);
+function setState(updates) {
+  Object.assign(state, updates);
+  render();
 }
-ReactDOM.createRoot(document.getElementById(“root”)).render(<App/>);
+
+function render() {
+  const app = document.getElementById('app');
+  const pending = state.jobs.filter(j => !state.done.includes(j.id));
+  const completed = state.jobs.filter(j => state.done.includes(j.id));
+  const earned = completed.reduce((s, j) => s + PAY[j.client], 0);
+  const pendingPay = pending.reduce((s, j) => s + PAY[j.client], 0);
+  const totalPay = state.jobs.reduce((s, j) => s + PAY[j.client], 0);
+
+  app.innerHTML = `
+    ${state.modal ? renderModal() : ''}
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="header-label">FIELD INSPECTOR</div>
+          <div class="header-title">ROUTE PRO</div>
+          <div class="name-row">
+            ${state.editName
+              ? `<input class="name-input" id="nameInput" value="${state.name}" onblur="saveName()" onkeydown="if(event.key==='Enter')saveName()" autofocus/>`
+              : `<span class="name-display" onclick="setState({editName:true})">✏️ ${state.name}</span>`
+            }
+          </div>
+        </div>
+        <div class="header-right">
+          <div style="font-size:10px;color:#86efac;font-family:'Rajdhani',sans-serif;">SURVEYS</div>
+          <div class="survey-count">${state.jobs.length}</div>
+          <div class="survey-rate" style="font-size:9px;color:#86efac;">mixed rates</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box" style="border:1px solid #00e67633;">
+          <div class="stat-label" style="color:var(--green);">EARNED</div>
+          <div class="stat-value" style="color:var(--green);">$${earned.toFixed(2)}</div>
+        </div>
+        <div class="stat-box" style="border:1px solid #29b6f633;">
+          <div class="stat-label" style="color:var(--blue);">PENDING</div>
+          <div class="stat-value" style="color:var(--blue);">$${pendingPay.toFixed(2)}</div>
+        </div>
+        <div class="stat-box" style="border:1px solid #ff980033;">
+          <div class="stat-label" style="color:var(--orange);">DONE</div>
+          <div class="stat-value" style="color:var(--orange);">${state.done.length}/${state.jobs.length}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab ${state.tab==='route'?'active':''}" onclick="setState({tab:'route'})">🗺 ROUTE</button>
+      <button class="tab ${state.tab==='text'?'active':''}" onclick="setState({tab:'text'})">📱 TEXTS</button>
+      <button class="tab ${state.tab==='add'?'active':''}" onclick="setState({tab:'add'})">➕ ADD</button>
+      <button class="tab ${state.tab==='stats'?'active':''}" onclick="setState({tab:'stats'})">📊 STATS</button>
+    </div>
+
+    <div class="content">
+      ${state.tab==='route' ? renderRoute() : ''}
+      ${state.tab==='text' ? renderText() : ''}
+      ${state.tab==='add' ? renderAdd() : ''}
+      ${state.tab==='stats' ? renderStats(earned, pendingPay, totalPay) : ''}
+    </div>
+  `;
+
+  if (state.editName) {
+    const inp = document.getElementById('nameInput');
+    if (inp) inp.focus();
+  }
+}
+
+function renderModal() {
+  const j = state.modal;
+  const msg = TEMPLATES[j.client] ? TEMPLATES[j.client](j, state.name) : '';
+  return `
+    <div class="modal-overlay" onclick="setState({modal:null})">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-label">PREVIEW TEXT MESSAGE</div>
+        <div class="modal-name">${j.contactName}</div>
+        <div class="modal-sub" style="color:${CC[j.client]}">${j.client} · ${j.contactPhone}</div>
+        <div class="msg-preview">${msg}</div>
+        <div class="modal-btns">
+          <button class="modal-cancel" onclick="setState({modal:null})">CANCEL</button>
+          <button class="modal-send" onclick="sendSMS()">📱 SEND TEXT</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderRoute() {
+  return `
+    <div class="action-row">
+      <button class="action-btn btn-optimize" onclick="optimize()">
+        ${state.optimized ? '✓ OPTIMIZED' : '⚡ OPTIMIZE'}
+      </button>
+      <button class="action-btn btn-route" onclick="fullRoute()">🧭 FULL ROUTE</button>
+    </div>
+    ${state.jobs.map((job, idx) => {
+      const d = state.done.includes(job.id);
+      const c = CC[job.client];
+      const isFIJob = isFI(job.client);
+      const priorityColor = job.priority==='high' ? '#ef5350' : job.priority==='medium' ? '#ff9800' : '#4a6572';
+      const priorityLabel = job.priority==='high' ? '● HIGH' : job.priority==='medium' ? '● MED' : '○ LOW';
+      return `
+        <div class="job-card ${d?'done':''}">
+          <div class="side-bar" style="background:${d?'#1a2f3a':c}"></div>
+          <div class="job-inner">
+            <div class="job-info">
+              <div class="job-badges">
+                <span class="badge" style="background:${c}22;color:${c};border-color:${c}">${CLIENT_LABELS[job.client]}</span>
+                <span class="priority-dot" style="color:${priorityColor};font-size:9px;">${priorityLabel}</span>
+                ${job.client==='FI-NC' ? '<span class="fi-only-badge">NO CONTACT</span>' : ''}
+                ${job.client==='FI-DH' ? `<span style="background:#ffd54f22;border:1px solid #ffd54f;color:#ffd54f;font-size:9px;border-radius:4px;padding:2px 7px;letter-spacing:1px;font-family:'Rajdhani',sans-serif;font-weight:bold;">🟡 DOOR HANGER</span>` : ''}
+              </div>
+              <div class="job-address">#${String(idx+1).padStart(2,'0')} — ${job.address}</div>
+              <div class="job-meta">${job.claimNumber}${!isFIJob ? ' · '+job.contactName : ''}</div>
+              <div class="job-type">${job.client==='FI-NC' ? '🔍 NO CONTACT — INSPECT & LEAVE' : job.client==='FI-DH' ? '🟡 KNOCK & LEAVE DOOR HANGER' : '🏠 EXTERIOR ONLY'}</div>
+              <div class="job-pay ${isFIJob?'fi-pay':''}">$${PAY[job.client].toFixed(2)}</div>
+            </div>
+            <div class="job-actions">
+              <button class="jbtn" style="color:var(--blue);border-color:#29b6f644;" onclick="openMap('${job.address}')">📍 MAP</button>
+              ${!isFIJob ? `<button class="jbtn" style="color:${c};border-color:${c}44;" onclick="openText(${job.id})">📱 TEXT</button>` : `<button class="jbtn" style="color:var(--muted);border-color:#1a2f3a;opacity:0.4;cursor:default;">NO TEXT</button>`}
+              <button class="jbtn" style="color:${d?'var(--green)':'var(--muted)'};border-color:${d?'#00e67644':'#1a2f3a'};" onclick="toggleDone(${job.id})">${d?'✓ DONE':'○ DONE'}</button>
+              <button class="jbtn" style="color:var(--red);border-color:#ef535044;" onclick="removeJob(${job.id})">✕</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+function renderText() {
+  const carriers = ['Allstate', 'Farmers'];
+  let html = `<div class="section-header">TEXT CLIENTS BY CARRIER</div>`;
+
+  carriers.forEach(client => {
+    const c = CC[client];
+    const cjobs = state.jobs.filter(j => j.client===client && !state.done.includes(j.id));
+    html += `
+      <div class="carrier-section" style="border:1px solid ${c}22;">
+        <div class="carrier-header">
+          <div>
+            <div class="carrier-name" style="color:${c}">${client}</div>
+            <div style="font-size:11px;color:var(--muted)">${cjobs.length} pending · exterior surveys</div>
+          </div>
+          <span class="carrier-tag" style="color:${c};border-color:${c}">EXTERIOR ONLY</span>
+        </div>
+        ${cjobs.length===0
+          ? `<div class="empty-msg">All ${client} surveys complete ✓</div>`
+          : cjobs.map(job => `
+            <div class="text-job-row">
+              <div>
+                <div class="text-job-name">${job.contactName}</div>
+                <div class="text-job-addr">${job.address.split(',')[0]}</div>
+                <div class="text-job-addr">${job.claimNumber}</div>
+              </div>
+              <button class="text-send-btn" style="background:${c}22;color:${c};border-color:${c}" onclick="openText(${job.id})">📱 TEXT</button>
+            </div>`).join('')
+        }
+      </div>`;
+  });
+
+  // FI No Contact section
+  const fiNCJobs = state.jobs.filter(j => j.client==='FI-NC' && !state.done.includes(j.id));
+  html += `
+    <div class="fi-section">
+      <div class="carrier-header">
+        <div>
+          <div class="carrier-name" style="color:var(--purple)">FI — No Contact</div>
+          <div style="font-size:11px;color:var(--muted)">${fiNCJobs.length} pending · no contact needed</div>
+        </div>
+        <span class="carrier-tag" style="color:var(--purple);border-color:var(--purple)">SHOW UP ONLY</span>
+      </div>
+      ${fiNCJobs.length===0
+        ? `<div class="empty-msg">All FI No Contact inspections complete ✓</div>`
+        : fiNCJobs.map(job => `
+          <div class="fi-job-row">
+            <div class="text-job-name" style="color:var(--text)">${job.address}</div>
+            <div class="text-job-addr">${job.claimNumber}</div>
+            <div class="fi-no-contact">🔍 Just show up — no knock, no text</div>
+          </div>`).join('')
+      }
+    </div>`;
+
+  // FI Door Hanger section
+  const fiDHJobs = state.jobs.filter(j => j.client==='FI-DH' && !state.done.includes(j.id));
+  html += `
+    <div class="fi-section" style="border-color:#ffd54f33;">
+      <div class="carrier-header">
+        <div>
+          <div class="carrier-name" style="color:#ffd54f">FI — Door Hanger</div>
+          <div style="font-size:11px;color:var(--muted)">${fiDHJobs.length} pending · knock & leave hanger</div>
+        </div>
+        <span class="carrier-tag" style="color:#ffd54f;border-color:#ffd54f">DOOR HANGER</span>
+      </div>
+      ${fiDHJobs.length===0
+        ? `<div class="empty-msg">All FI Door Hanger inspections complete ✓</div>`
+        : fiDHJobs.map(job => `
+          <div class="fi-job-row" style="border-color:#ffd54f22;">
+            <div class="text-job-name" style="color:var(--text)">${job.address}</div>
+            <div class="text-job-addr">${job.claimNumber}</div>
+            <div class="fi-no-contact" style="color:#ffd54f;">🟡 Knock — if no answer, leave yellow door hanger</div>
+          </div>`).join('')
+      }
+    </div>`;
+
+  return html;
+}
+
+function renderAdd() {
+  const nj = state.newJob;
+  const isFI = nj.client === 'FI';
+  return `
+    <div class="form-card">
+      <div style="font-size:12px;letter-spacing:3px;color:var(--green);margin-bottom:18px;font-family:'Rajdhani',sans-serif;font-weight:bold;">NEW INSPECTION ORDER</div>
+
+      <div class="form-label">PROPERTY ADDRESS</div>
+      <input class="form-input" placeholder="123 Main St, Salt Lake City, UT" value="${nj.address}" oninput="updateNew('address',this.value)"/>
+
+      <div class="form-label">CARRIER</div>
+      <div class="toggle-group" style="margin-bottom:4px;">
+        <button class="toggle-btn ${nj.client==='Allstate'?'active-allstate':''}" onclick="updateNew('client','Allstate')">Allstate</button>
+        <button class="toggle-btn ${nj.client==='Farmers'?'active-farmers':''}" onclick="updateNew('client','Farmers')">Farmers</button>
+      </div>
+      <div class="toggle-group" style="margin-bottom:12px;">
+        <button class="toggle-btn ${nj.client==='FI-NC'?'active-fi':''}" onclick="updateNew('client','FI-NC')">FI — No Contact</button>
+        <button class="toggle-btn ${nj.client==='FI-DH'?'':''}${nj.client==='FI-DH'?'border:1px solid #ffd54f;color:#ffd54f;background:#ffd54f22;':''}" style="${nj.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f22;':''}" onclick="updateNew('client','FI-DH')">FI — Door Hanger</button>
+      </div>
+
+      ${isFI(nj.client) ? `
+        <div class="fi-notice" style="${nj.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f11;':''}">
+          ${nj.client==='FI-NC' ? '🔍 No Contact FI — just show up and inspect. No text generated.' : '🟡 Door Hanger FI — knock on door, if no answer leave the yellow door hanger. No text generated.'}
+        </div>
+      ` : `
+        <div class="form-label">CONTACT NAME</div>
+        <input class="form-input" placeholder="Homeowner name" value="${nj.contactName}" oninput="updateNew('contactName',this.value)"/>
+        <div class="form-label">CONTACT PHONE</div>
+        <input class="form-input" placeholder="8015550100" value="${nj.contactPhone}" oninput="updateNew('contactPhone',this.value)"/>
+      `}
+
+      <div class="form-label">CLAIM NUMBER</div>
+      <input class="form-input" placeholder="${isFI(nj.client)?'FI-2024-0100':'e.g. ALL-2024-0200'}" value="${nj.claimNumber}" oninput="updateNew('claimNumber',this.value)"/>
+
+      <div class="form-label">PRIORITY</div>
+      <div class="toggle-group">
+        <button class="toggle-btn ${nj.priority==='high'?'active-high':''}" onclick="updateNew('priority','high')">HIGH</button>
+        <button class="toggle-btn ${nj.priority==='medium'?'active-medium':''}" onclick="updateNew('priority','medium')">MED</button>
+        <button class="toggle-btn ${nj.priority==='low'?'active-low':''}" onclick="updateNew('priority','low')">LOW</button>
+      </div>
+
+      <div style="background:var(--green-dim);border:1px solid #00e67633;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#86efac;line-height:1.5;">
+        ${isFI(nj.client) ? '🔍 FIELD INSPECTION · $14.50 fixed rate · No text generated' : '🏠 EXTERIOR SURVEY · $14.50 fixed rate · Auto-generates text template'}
+      </div>
+
+      <button class="add-btn" onclick="addJob()">+ ADD INSPECTION</button>
+    </div>`;
+}
+
+function renderStats(earned, pendingPay, totalPay) {
+  const allstateJobs = state.jobs.filter(j => j.client==='Allstate');
+  const farmersJobs = state.jobs.filter(j => j.client==='Farmers');
+  const fiNCJobs2 = state.jobs.filter(j => j.client==='FI-NC');
+  const fiDHJobs2 = state.jobs.filter(j => j.client==='FI-DH');
+  const allstateDone = allstateJobs.filter(j => state.done.includes(j.id)).length;
+  const farmersDone = farmersJobs.filter(j => state.done.includes(j.id)).length;
+  const fiNCDone = fiNCJobs2.filter(j => state.done.includes(j.id)).length;
+  const fiDHDone = fiDHJobs2.filter(j => state.done.includes(j.id)).length;
+  const pct = state.jobs.length ? Math.round((state.done.length/state.jobs.length)*100) : 0;
+
+  return `
+    <div class="stats-card">
+      <div class="stats-title">EARNINGS TODAY</div>
+      <div class="stat-row">
+        <div><div class="stat-name">Completed</div><div class="stat-sub">${state.done.length} surveys</div></div>
+        <div class="stat-amount" style="color:var(--green)">$${earned.toFixed(2)}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Pending</div><div class="stat-sub">${state.jobs.length-state.done.length} surveys</div></div>
+        <div class="stat-amount" style="color:var(--blue)">$${pendingPay.toFixed(2)}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <div style="color:var(--text);font-weight:bold;font-family:'Rajdhani',sans-serif;">Total Day</div>
+        <div class="stat-amount" style="color:var(--text);font-size:22px;">$${totalPay.toFixed(2)}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">BY CARRIER</div>
+      ${[
+        {name:'Allstate', jobs:allstateJobs, done:allstateDone, color:CC.Allstate},
+        {name:'Farmers', jobs:farmersJobs, done:farmersDone, color:CC.Farmers},
+        {name:'FI — No Contact', jobs:fiNCJobs2, done:fiNCDone, color:CC['FI-NC']},
+        {name:'FI — Door Hanger', jobs:fiDHJobs2, done:fiDHDone, color:'#ffd54f'},
+      ].map(c => `
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="color:${c.color};font-weight:bold;font-family:'Rajdhani',sans-serif;">${c.name}</span>
+            <span style="color:#86efac;font-size:12px;">${c.done}/${c.jobs.length} · $${(c.jobs.reduce((s,j)=>s+PAY[j.client],0)).toFixed(2)}</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:${c.jobs.length?(c.done/c.jobs.length)*100:0}%;background:${c.color};"></div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">OVERALL PROGRESS</div>
+      <div class="progress-bar-bg" style="height:12px;">
+        <div class="progress-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--green),#86efac);"></div>
+      </div>
+      <div style="text-align:right;margin-top:6px;color:#86efac;font-size:12px;">${pct}% complete</div>
+    </div>`;
+}
+
+// Actions
+function saveName() {
+  const inp = document.getElementById('nameInput');
+  if (inp) setState({ name: inp.value || 'Your Name', editName: false });
+}
+
+function optimize() {
+  const sorted = [...state.jobs].sort((a, b) => {
+    if (state.done.includes(a.id)) return 1;
+    if (state.done.includes(b.id)) return -1;
+    const po = {high:0, medium:1, low:2};
+    return po[a.priority] - po[b.priority];
+  });
+  setState({ jobs: sorted, optimized: true });
+}
+
+function fullRoute() {
+  const pending = state.jobs.filter(j => !state.done.includes(j.id));
+  if (!pending.length) return;
+  window.open(`https://www.google.com/maps/dir/${pending.map(j=>encodeURIComponent(j.address)).join('/')}`, '_blank');
+}
+
+function openMap(addr) {
+  window.open(`https://maps.google.com/maps?q=${encodeURIComponent(addr)}`, '_blank');
+}
+
+function openText(id) {
+  const job = state.jobs.find(j => j.id === id);
+  if (job && job.client !== 'FI') setState({ modal: job });
+}
+
+function sendSMS() {
+  const j = state.modal;
+  if (!j) return;
+  const msg = TEMPLATES[j.client](j, state.name);
+  window.open(`sms:${j.contactPhone.replace(/\D/g,'')}?body=${encodeURIComponent(msg)}`, '_blank');
+  setState({ modal: null });
+}
+
+function toggleDone(id) {
+  const done = state.done.includes(id)
+    ? state.done.filter(x => x !== id)
+    : [...state.done, id];
+  setState({ done });
+}
+
+function removeJob(id) {
+  setState({
+    jobs: state.jobs.filter(j => j.id !== id),
+    done: state.done.filter(x => x !== id)
+  });
+}
+
+function updateNew(key, val) {
+  setState({ newJob: { ...state.newJob, [key]: val } });
+}
+
+function addJob() {
+  const nj = state.newJob;
+  if (!nj.address) return;
+  if (!isFI(nj.client) && !nj.contactName) return;
+  const newJob = {
+    ...nj,
+    id: Date.now(),
+    claimNumber: nj.claimNumber || `${nj.client.slice(0,3).toUpperCase()}-${Date.now()}`
+  };
+  setState({
+    jobs: [...state.jobs, newJob],
+    newJob: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' },
+    tab: 'route',
+    optimized: false
+  });
+}
+
+render();
 </script>
 
 </body>
