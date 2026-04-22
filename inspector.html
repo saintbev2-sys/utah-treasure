@@ -146,6 +146,14 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 .empty-msg { text-align:center; color:var(–muted); font-size:12px; padding:12px; }
 
 .section-header { font-size:10px; letter-spacing:3px; color:var(–green); margin-bottom:12px; font-family:‘Rajdhani’,sans-serif; }
+
+/* MAP TAB */
+#map-container { width:100%; height:calc(100vh - 180px); position:relative; }
+.map-status { padding:14px 16px; background:#0a1820; border-bottom:1px solid var(–border); display:flex; align-items:center; gap:8px; font-size:11px; }
+.map-dot { width:10px; height:10px; border-radius:50%; background:var(–green); box-shadow:0 0 8px var(–green); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.6;transform:scale(1.3);} }
+.map-legend { padding:10px 16px; background:#0a1820; border-top:1px solid var(–border); display:flex; gap:14px; flex-wrap:wrap; font-size:10px; }
+.legend-item { display:flex; align-items:center; gap:5px; }
 </style>
 
 </head>
@@ -178,6 +186,8 @@ let state = {
   editName: false,
   modal: null,
   optimized: false,
+  userLat: null,
+  userLng: null,
   newJob: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' }
 };
 
@@ -236,13 +246,15 @@ function render() {
       <button class="tab ${state.tab==='route'?'active':''}" onclick="setState({tab:'route'})">🗺 ROUTE</button>
       <button class="tab ${state.tab==='text'?'active':''}" onclick="setState({tab:'text'})">📱 TEXTS</button>
       <button class="tab ${state.tab==='add'?'active':''}" onclick="setState({tab:'add'})">➕ ADD</button>
+      <button class="tab ${state.tab==='map'?'active':''}" onclick="openMapTab()">📡 MAP</button>
       <button class="tab ${state.tab==='stats'?'active':''}" onclick="setState({tab:'stats'})">📊 STATS</button>
     </div>
 
-    <div class="content">
+    <div class="content" style="${state.tab==='map'?'padding:0;':''}">
       ${state.tab==='route' ? renderRoute() : ''}
       ${state.tab==='text' ? renderText() : ''}
       ${state.tab==='add' ? renderAdd() : ''}
+      ${state.tab==='map' ? renderMap() : ''}
       ${state.tab==='stats' ? renderStats(earned, pendingPay, totalPay) : ''}
     </div>
   `;
@@ -568,6 +580,121 @@ function addJob() {
     tab: 'route',
     optimized: false
   });
+}
+
+function renderMap() {
+  const pending = state.jobs.filter(j => !state.done.includes(j.id));
+  const locationStatus = state.userLat
+    ? `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span>`
+    : `<div style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0;"></div><span style="color:var(--muted)">Locating you...</span>`;
+  return `
+    <div class="map-status">${locationStatus}
+      <span style="color:var(--muted);margin-left:auto;">${pending.length} stops pending</span>
+    </div>
+    <div id="map-container">
+      <div id="leaflet-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div class="map-legend">
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#ff4444;flex-shrink:0;"></div><span style="color:#fff">YOU</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#40c8ff;flex-shrink:0;"></div><span style="color:#40c8ff">Allstate</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#ffaa00;flex-shrink:0;"></div><span style="color:#ffaa00">Farmers</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#e040fb;flex-shrink:0;"></div><span style="color:#e040fb">FI-NC</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#ffd54f;flex-shrink:0;"></div><span style="color:#ffd54f">FI-DH</span></div>
+    </div>`;
+}
+
+function openMapTab() {
+  state.tab = 'map';
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      pos => {
+        state.userLat = pos.coords.latitude;
+        state.userLng = pos.coords.longitude;
+        render();
+        setTimeout(() => initLeafletMap(), 200);
+      },
+      err => { render(); setTimeout(() => initLeafletMap(), 200); },
+      { enableHighAccuracy: true, maximumAge: 10000 }
+    );
+  }
+  render();
+  setTimeout(() => initLeafletMap(), 300);
+}
+
+function initLeafletMap() {
+  const mapEl = document.getElementById('leaflet-map');
+  if (!mapEl) return;
+  if (!window.L) {
+    if (!document.getElementById('leaflet-css')) {
+      const css = document.createElement('link');
+      css.id = 'leaflet-css';
+      css.rel = 'stylesheet';
+      css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(css);
+    }
+    if (!document.getElementById('leaflet-js')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      script.onload = () => buildMap();
+      document.head.appendChild(script);
+    }
+  } else {
+    buildMap();
+  }
+}
+
+function buildMap() {
+  const mapEl = document.getElementById('leaflet-map');
+  if (!mapEl || !window.L) return;
+  if (mapEl._leaflet_id) { mapEl._leaflet_id = null; mapEl.innerHTML = ''; }
+
+  const centerLat = state.userLat || 40.7608;
+  const centerLng = state.userLng || -111.8910;
+  const map = L.map('leaflet-map').setView([centerLat, centerLng], 12);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', maxZoom: 19
+  }).addTo(map);
+
+  const colorsMap = { Allstate:'#40c8ff', Farmers:'#ffaa00', 'FI-NC':'#e040fb', 'FI-DH':'#ffd54f' };
+
+  state.jobs.forEach((job, idx) => {
+    const isDone = state.done.includes(job.id);
+    const color = isDone ? '#555' : (colorsMap[job.client] || '#00ff88');
+    const label = isDone ? '✓' : String(idx+1);
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(job.address)}&limit=1`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data[0]) return;
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="background:${color};color:#000;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.5);"><span style="transform:rotate(45deg)">${label}</span></div>`,
+          iconSize:[30,30], iconAnchor:[15,30]
+        });
+        L.marker([lat,lng],{icon}).addTo(map).bindPopup(
+          `<div style="font-family:monospace;font-size:12px;min-width:180px;line-height:1.6;">
+            <strong style="color:${color}">${job.client}</strong><br>
+            ${job.address}<br>
+            <span style="color:#888">${job.claimNumber}</span>
+            ${job.contactName ? `<br>👤 ${job.contactName}` : ''}
+            ${isDone ? '<br><span style="color:#00c853">✓ DONE</span>' : ''}
+          </div>`
+        );
+      });
+  });
+
+  if (state.userLat) {
+    const youIcon = L.divIcon({
+      className: '',
+      html: `<div style="background:#ff4444;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px #ff4444,0 0 4px #fff;"></div>`,
+      iconSize:[18,18], iconAnchor:[9,9]
+    });
+    L.marker([state.userLat, state.userLng], {icon:youIcon}).addTo(map)
+      .bindPopup('<strong style="font-family:monospace;">📍 YOU ARE HERE</strong>');
+  }
 }
 
 render();
