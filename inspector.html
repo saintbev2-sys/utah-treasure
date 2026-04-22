@@ -163,7 +163,7 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 
 <script>
 const PAY = { Allstate: 14.50, Farmers: 14.50, 'FI-NC': 14.50, 'FI-DH': 14.50 };
-const CC = { Allstate: '#29b6f6', Farmers: '#ff9800', 'FI-NC': '#ce93d8', 'FI-DH': '#ffd54f' };
+const CC = { Allstate: '#40c8ff', Farmers: '#ffaa00', 'FI-NC': '#e040fb', 'FI-DH': '#ffd54f' };
 const CLIENT_LABELS = { Allstate: 'Allstate', Farmers: 'Farmers', 'FI-NC': 'FI — No Contact', 'FI-DH': 'FI — Door Hanger' };
 
 const TEMPLATES = {
@@ -171,8 +171,32 @@ const TEMPLATES = {
   Farmers: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`,
 };
 
+// LOAD saved jobs from localStorage
+function loadSaved() {
+  try {
+    const saved = localStorage.getItem('routepro_jobs');
+    const savedDone = localStorage.getItem('routepro_done');
+    const savedName = localStorage.getItem('routepro_name');
+    return {
+      jobs: saved ? JSON.parse(saved) : null,
+      done: savedDone ? JSON.parse(savedDone) : null,
+      name: savedName || null
+    };
+  } catch(e) { return {}; }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('routepro_jobs', JSON.stringify(state.jobs));
+    localStorage.setItem('routepro_done', JSON.stringify(state.done));
+    localStorage.setItem('routepro_name', state.name);
+  } catch(e) {}
+}
+
+const saved = loadSaved();
+
 let state = {
-  jobs: [
+  jobs: saved.jobs || [
     { id:1, address:"1234 W 4700 S, Taylorsville, UT", client:"Allstate", contactName:"John Smith", contactPhone:"8015550101", priority:"high", claimNumber:"ALL-2024-0091" },
     { id:2, address:"892 E 3300 S, Salt Lake City, UT", client:"Farmers", contactName:"Maria Lopez", contactPhone:"8015550182", priority:"high", claimNumber:"FRM-2024-0342" },
     { id:3, address:"3401 S 900 W, South Salt Lake, UT", client:"FI-NC", contactName:"", contactPhone:"", priority:"medium", claimNumber:"FI-2024-0055" },
@@ -180,22 +204,58 @@ let state = {
     { id:5, address:"410 E 12300 S, Draper, UT", client:"FI-DH", contactName:"", contactPhone:"", priority:"low", claimNumber:"FI-2024-0061" },
     { id:6, address:"2245 W 7800 S, West Jordan, UT", client:"Allstate", contactName:"Sandra Lee", contactPhone:"8015550556", priority:"medium", claimNumber:"ALL-2024-0117" },
   ],
-  done: [],
+  done: saved.done || [],
   tab: 'route',
-  name: 'Your Name',
+  name: saved.name || 'Your Name',
   editName: false,
   modal: null,
   optimized: false,
   userLat: null,
   userLng: null,
-  newJob: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' }
+  // Form fields stored separately so inputs don't re-render
+  form: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' }
 };
 
 function isFI(client) { return client === 'FI-NC' || client === 'FI-DH'; }
 
-function setState(updates) {
+// Only re-render when NOT on the add tab with active inputs
+function setState(updates, skipSave) {
   Object.assign(state, updates);
+  if (!skipSave) saveData();
   render();
+}
+
+// Read all form field values from DOM before any render
+function syncFormFromDOM() {
+  const fields = ['address','contactName','contactPhone','claimNumber'];
+  fields.forEach(f => {
+    const el = document.getElementById('form_' + f);
+    if (el) state.form[f] = el.value;
+  });
+}
+
+// GPS only updates map dot, never full re-render
+let gpsWatchId = null;
+function startGPS() {
+  if (gpsWatchId !== null) return;
+  if (!navigator.geolocation) return;
+  gpsWatchId = navigator.geolocation.watchPosition(
+    pos => {
+      state.userLat = pos.coords.latitude;
+      state.userLng = pos.coords.longitude;
+      // Only update the status bar text, never full re-render
+      const statusEl = document.getElementById('map-status-text');
+      if (statusEl) statusEl.innerHTML = `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span>`;
+      // Update map dot position if map is open
+      if (state.tab === 'map' && window._youMarker) {
+        window._youMarker.setLatLng([state.userLat, state.userLng]);
+      } else if (state.tab === 'map' && window._leafletMap && state.userLat) {
+        addYouMarker(window._leafletMap);
+      }
+    },
+    err => {},
+    { enableHighAccuracy: true, maximumAge: 15000 }
+  );
 }
 
 function render() {
@@ -403,44 +463,44 @@ function renderText() {
 }
 
 function renderAdd() {
-  const nj = state.newJob;
-  const isAddFI = isFI(nj.client);
+  const f = state.form;
+  const isAddFI = isFI(f.client);
   return `
     <div class="form-card">
       <div style="font-size:12px;letter-spacing:3px;color:var(--green);margin-bottom:18px;font-family:'Rajdhani',sans-serif;font-weight:bold;">NEW INSPECTION ORDER</div>
 
       <div class="form-label">PROPERTY ADDRESS</div>
-      <input class="form-input" placeholder="123 Main St, Salt Lake City, UT" value="${nj.address}" oninput="updateNew('address',this.value)"/>
+      <input id="form_address" class="form-input" placeholder="123 Main St, Salt Lake City, UT" value="${f.address}"/>
 
       <div class="form-label">CARRIER</div>
       <div class="toggle-group" style="margin-bottom:4px;">
-        <button class="toggle-btn ${nj.client==='Allstate'?'active-allstate':''}" onclick="updateNew('client','Allstate')">Allstate</button>
-        <button class="toggle-btn ${nj.client==='Farmers'?'active-farmers':''}" onclick="updateNew('client','Farmers')">Farmers</button>
+        <button class="toggle-btn ${f.client==='Allstate'?'active-allstate':''}" onclick="setClient('Allstate')">Allstate</button>
+        <button class="toggle-btn ${f.client==='Farmers'?'active-farmers':''}" onclick="setClient('Farmers')">Farmers</button>
       </div>
       <div class="toggle-group" style="margin-bottom:12px;">
-        <button class="toggle-btn ${nj.client==='FI-NC'?'active-fi':''}" onclick="updateNew('client','FI-NC')">FI — No Contact</button>
-        <button class="toggle-btn ${nj.client==='FI-DH'?'active-fi':''}" style="${nj.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f22;':''}" onclick="updateNew('client','FI-DH')">FI — Door Hanger</button>
+        <button class="toggle-btn ${f.client==='FI-NC'?'active-fi':''}" onclick="setClient('FI-NC')">FI — No Contact</button>
+        <button class="toggle-btn ${f.client==='FI-DH'?'active-fi':''}" style="${f.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f22;':''}" onclick="setClient('FI-DH')">FI — Door Hanger</button>
       </div>
 
       ${isAddFI ? `
-        <div class="fi-notice" style="${nj.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f11;':''}">
-          ${nj.client==='FI-NC' ? '🔍 No Contact FI — just show up and inspect. No text generated.' : '🟡 Door Hanger FI — knock on door, if no answer leave the yellow door hanger. No text generated.'}
+        <div class="fi-notice" style="${f.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f11;':''}">
+          ${f.client==='FI-NC' ? '🔍 No Contact — just show up and inspect. No text generated.' : '🟡 Door Hanger — knock, if no answer leave the yellow door hanger. No text generated.'}
         </div>
       ` : `
         <div class="form-label">CONTACT NAME</div>
-        <input class="form-input" placeholder="Homeowner name" value="${nj.contactName}" oninput="updateNew('contactName',this.value)"/>
+        <input id="form_contactName" class="form-input" placeholder="Homeowner name" value="${f.contactName}"/>
         <div class="form-label">CONTACT PHONE</div>
-        <input class="form-input" placeholder="8015550100" value="${nj.contactPhone}" oninput="updateNew('contactPhone',this.value)"/>
+        <input id="form_contactPhone" class="form-input" placeholder="8015550100" value="${f.contactPhone}" type="tel"/>
       `}
 
       <div class="form-label">CLAIM NUMBER</div>
-      <input class="form-input" placeholder="${isAddFI?'FI-2024-0100':'e.g. ALL-2024-0200'}" value="${nj.claimNumber}" oninput="updateNew('claimNumber',this.value)"/>
+      <input id="form_claimNumber" class="form-input" placeholder="${isAddFI?'FI-2024-0100':'e.g. ALL-2024-0200'}" value="${f.claimNumber}"/>
 
       <div class="form-label">PRIORITY</div>
-      <div class="toggle-group">
-        <button class="toggle-btn ${nj.priority==='high'?'active-high':''}" onclick="updateNew('priority','high')">HIGH</button>
-        <button class="toggle-btn ${nj.priority==='medium'?'active-medium':''}" onclick="updateNew('priority','medium')">MED</button>
-        <button class="toggle-btn ${nj.priority==='low'?'active-low':''}" onclick="updateNew('priority','low')">LOW</button>
+      <div class="toggle-group" style="margin-bottom:14px;">
+        <button class="toggle-btn ${f.priority==='high'?'active-high':''}" onclick="setPriority('high')">HIGH</button>
+        <button class="toggle-btn ${f.priority==='medium'?'active-medium':''}" onclick="setPriority('medium')">MED</button>
+        <button class="toggle-btn ${f.priority==='low'?'active-low':''}" onclick="setPriority('low')">LOW</button>
       </div>
 
       <div style="background:var(--green-dim);border:1px solid #00ff8833;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#00ff88;line-height:1.5;">
@@ -551,35 +611,57 @@ function toggleDone(id) {
   const done = state.done.includes(id)
     ? state.done.filter(x => x !== id)
     : [...state.done, id];
-  setState({ done });
+  state.done = done;
+  saveData();
+  render();
 }
 
 function removeJob(id) {
-  setState({
-    jobs: state.jobs.filter(j => j.id !== id),
-    done: state.done.filter(x => x !== id)
-  });
+  state.jobs = state.jobs.filter(j => j.id !== id);
+  state.done = state.done.filter(x => x !== id);
+  saveData();
+  render();
 }
 
-function updateNew(key, val) {
-  setState({ newJob: { ...state.newJob, [key]: val } });
+function addYouMarker(map) {
+  if (window._youMarker) { window._youMarker.remove(); }
+  const youIcon = L.divIcon({
+    className: '',
+    html: `<div style="background:#ff4444;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px #ff4444,0 0 4px #fff;"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9]
+  });
+  window._youMarker = L.marker([state.userLat, state.userLng], {icon:youIcon}).addTo(map)
+    .bindPopup('<strong style="font-family:monospace;">📍 YOU ARE HERE</strong>');
+}
+
+function setClient(val) {
+  syncFormFromDOM();
+  state.form.client = val;
+  render();
+}
+
+function setPriority(val) {
+  syncFormFromDOM();
+  state.form.priority = val;
+  render();
 }
 
 function addJob() {
-  const nj = state.newJob;
-  if (!nj.address) return;
-  if (!isFI(nj.client) && !nj.contactName) return;
+  syncFormFromDOM();
+  const f = state.form;
+  if (!f.address.trim()) { alert('Please enter an address'); return; }
+  if (!isFI(f.client) && !f.contactName.trim()) { alert('Please enter a contact name'); return; }
   const newJob = {
-    ...nj,
+    ...f,
     id: Date.now(),
-    claimNumber: nj.claimNumber || `${nj.client.slice(0,3).toUpperCase()}-${Date.now()}`
+    claimNumber: f.claimNumber.trim() || `${f.client.slice(0,3).toUpperCase()}-${Date.now()}`
   };
-  setState({
-    jobs: [...state.jobs, newJob],
-    newJob: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' },
-    tab: 'route',
-    optimized: false
-  });
+  state.jobs = [...state.jobs, newJob];
+  state.form = { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' };
+  state.tab = 'route';
+  state.optimized = false;
+  saveData();
+  render();
 }
 
 function renderMap() {
@@ -588,7 +670,7 @@ function renderMap() {
     ? `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span>`
     : `<div style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0;"></div><span style="color:var(--muted)">Locating you...</span>`;
   return `
-    <div class="map-status">${locationStatus}
+    <div class="map-status" id="map-status-text">${locationStatus}
       <span style="color:var(--muted);margin-left:auto;">${pending.length} stops pending</span>
     </div>
     <div id="map-container">
@@ -605,19 +687,8 @@ function renderMap() {
 
 function openMapTab() {
   state.tab = 'map';
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(
-      pos => {
-        state.userLat = pos.coords.latitude;
-        state.userLng = pos.coords.longitude;
-        render();
-        setTimeout(() => initLeafletMap(), 200);
-      },
-      err => { render(); setTimeout(() => initLeafletMap(), 200); },
-      { enableHighAccuracy: true, maximumAge: 10000 }
-    );
-  }
   render();
+  startGPS();
   setTimeout(() => initLeafletMap(), 300);
 }
 
@@ -652,6 +723,8 @@ function buildMap() {
   const centerLat = state.userLat || 40.7608;
   const centerLng = state.userLng || -111.8910;
   const map = L.map('leaflet-map').setView([centerLat, centerLng], 12);
+  window._leafletMap = map;
+  window._youMarker = null;
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap © CARTO', maxZoom: 19
@@ -687,13 +760,7 @@ function buildMap() {
   });
 
   if (state.userLat) {
-    const youIcon = L.divIcon({
-      className: '',
-      html: `<div style="background:#ff4444;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px #ff4444,0 0 4px #fff;"></div>`,
-      iconSize:[18,18], iconAnchor:[9,9]
-    });
-    L.marker([state.userLat, state.userLng], {icon:youIcon}).addTo(map)
-      .bindPopup('<strong style="font-family:monospace;">📍 YOU ARE HERE</strong>');
+    addYouMarker(map);
   }
 }
 
