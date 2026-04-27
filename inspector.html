@@ -22,6 +22,8 @@
 –purple-dim: #e040fb25;
 –red: #ff5252;
 –red-dim: #ff525225;
+–yellow: #ffd54f;
+–yellow-dim: #ffd54f25;
 –text: #ffffff;
 –muted: #7a9aaa;
 –border: #1e3a4a;
@@ -34,13 +36,7 @@
   ::-webkit-scrollbar-thumb { background:var(–green-dim); border-radius:2px; }
 
 /* HEADER */
-.header {
-background: linear-gradient(135deg, #0a1a0e 0%, #0a1624 100%);
-border-bottom: 1px solid var(–green);
-padding: 16px 16px 12px;
-position: sticky; top:0; z-index:100;
-box-shadow: 0 4px 20px rgba(0,230,118,0.1);
-}
+.header { background: linear-gradient(135deg, #0a1a0e 0%, #0a1624 100%); border-bottom: 1px solid var(–green); padding: 16px 16px 12px; position: sticky; top:0; z-index:100; box-shadow: 0 4px 20px rgba(0,230,118,0.1); }
 .header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
 .header-label { font-size:9px; letter-spacing:4px; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
 .header-title { font-size:22px; font-weight:700; font-family:‘Rajdhani’,sans-serif; letter-spacing:2px; }
@@ -57,8 +53,8 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 .stat-value { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
 
 /* TABS */
-.tabs { display:flex; background:#0a1820; border-bottom:2px solid var(–border); }
-.tab { flex:1; padding:11px 4px; background:none; border:none; border-bottom:3px solid transparent; color:#6a8a9a; font-size:10px; letter-spacing:1px; font-weight:bold; cursor:pointer; transition:all 0.2s; font-family:‘Rajdhani’,sans-serif; }
+.tabs { display:flex; background:#0a1820; border-bottom:2px solid var(–border); overflow-x:auto; }
+.tab { flex:1; min-width:60px; padding:11px 4px; background:none; border:none; border-bottom:3px solid transparent; color:#6a8a9a; font-size:10px; letter-spacing:1px; font-weight:bold; cursor:pointer; transition:all 0.2s; font-family:‘Rajdhani’,sans-serif; white-space:nowrap; }
 .tab.active { border-bottom-color:var(–green); color:var(–green); }
 
 /* CONTENT */
@@ -75,7 +71,7 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 .job-card.done { opacity:0.35; }
 .job-card .side-bar { position:absolute; left:0; top:0; bottom:0; width:4px; }
 .job-inner { margin-left:10px; display:flex; justify-content:space-between; gap:8px; }
-.job-info { flex:1; }
+.job-info { flex:1; min-width:0; }
 .job-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px; align-items:center; }
 .badge { font-size:10px; border-radius:4px; padding:3px 8px; letter-spacing:1px; font-weight:bold; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
 .priority-dot { font-size:10px; font-weight:bold; }
@@ -85,7 +81,17 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 .job-pay { font-size:18px; font-weight:bold; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
 .job-pay.fi-pay { color:var(–purple); }
 
-.job-actions { display:flex; flex-direction:column; gap:5px; }
+/* NEW: Travel + Call info row */
+.job-extra { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; font-size:10px; font-family:‘Rajdhani’,sans-serif; }
+.extra-chip { background:rgba(0,0,0,0.4); border:1px solid var(–border); border-radius:4px; padding:3px 7px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }
+.extra-chip.travel { color:var(–blue); border-color:#40c8ff44; }
+.extra-chip.attempts { color:var(–orange); border-color:#ffaa0044; }
+.extra-chip.last-call { color:var(–muted); }
+.extra-chip.followup-due { color:var(–red); border-color:#ff525266; background:rgba(255,82,82,0.08); animation:pulseRed 2s infinite; }
+.extra-chip.refused-warn { color:var(–red); border-color:var(–red); background:rgba(255,82,82,0.15); font-weight:bold; }
+@keyframes pulseRed { 0%,100%{opacity:1;} 50%{opacity:0.55;} }
+
+.job-actions { display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
 .jbtn { border-radius:6px; padding:6px 10px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; font-weight:bold; transition:all 0.15s; background:rgba(0,0,0,0.4); white-space:nowrap; }
 .jbtn:active { transform:scale(0.95); }
 
@@ -93,8 +99,8 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 .fi-only-badge { background:var(–purple-dim); border:1px solid var(–purple); color:var(–purple); font-size:10px; border-radius:4px; padding:3px 8px; letter-spacing:1px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 
 /* MODAL */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
-.modal { background:#0a1a14; border:1px solid var(–green); border-radius:16px; padding:22px; max-width:380px; width:100%; }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+.modal { background:#0a1a14; border:1px solid var(–green); border-radius:16px; padding:22px; max-width:380px; width:100%; max-height:90vh; overflow-y:auto; }
 .modal-label { font-size:9px; letter-spacing:3px; color:var(–green); margin-bottom:4px; font-family:‘Rajdhani’,sans-serif; }
 .modal-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
 .modal-sub { font-size:11px; margin-bottom:14px; }
@@ -102,6 +108,17 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 .modal-btns { display:flex; gap:10px; }
 .modal-cancel { flex:1; padding:11px; border-radius:8px; background:var(–red-dim); border:1px solid var(–red); color:var(–red); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 .modal-send { flex:2; padding:11px; border-radius:8px; background:linear-gradient(135deg,#003d1a,#005724); border:1px solid var(–green); color:var(–green); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
+
+/* TEMPLATE PICKER */
+.template-picker { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.template-option { background:rgba(0,0,0,0.35); border:1px solid var(–border); border-radius:8px; padding:10px 12px; cursor:pointer; transition:all 0.15s; text-align:left; color:var(–text); font-family:‘Share Tech Mono’,monospace; }
+.template-option.active { border-color:var(–green); background:rgba(0,255,136,0.08); box-shadow:0 0 12px rgba(0,255,136,0.15); }
+.template-option:active { transform:scale(0.98); }
+.template-title { font-size:11px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; letter-spacing:1px; margin-bottom:2px; }
+.template-desc { font-size:10px; color:var(–muted); }
+.template-option.warn .template-title { color:var(–red); }
+.template-option.warn { border-color:#ff525244; }
+.template-option.warn.active { border-color:var(–red); background:rgba(255,82,82,0.08); box-shadow:0 0 12px rgba(255,82,82,0.15); }
 
 /* FORM */
 .form-card { background:var(–surface); border:1px solid var(–green-dim); border-radius:12px; padding:20px; }
@@ -154,11 +171,22 @@ box-shadow: 0 4px 20px rgba(0,230,118,0.1);
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.6;transform:scale(1.3);} }
 .map-legend { padding:10px 16px; background:#0a1820; border-top:1px solid var(–border); display:flex; gap:14px; flex-wrap:wrap; font-size:10px; }
 .legend-item { display:flex; align-items:center; gap:5px; }
+
+/* JOB TIMER */
+.timer-chip { background:rgba(0,255,136,0.08); border:1px solid var(–green); color:var(–green); border-radius:4px; padding:3px 7px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; font-size:10px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
+.timer-chip.running { animation:pulseGreen 1.5s infinite; }
+.timer-chip.done { color:var(–muted); border-color:var(–border); background:rgba(0,0,0,0.4); }
+@keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.4);} 50%{box-shadow:0 0 0 6px rgba(0,255,136,0);} }
+.jbtn.timer-start { color:var(–green); border-color:#00ff8866; }
+.jbtn.timer-stop { color:var(–red); border-color:var(–red); background:rgba(255,82,82,0.15); animation:pulseRed 1.5s infinite; }
+
+/* TOAST */
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#0a2a18; border:1px solid var(–green); color:var(–green); padding:12px 20px; border-radius:8px; font-family:‘Rajdhani’,sans-serif; font-size:12px; letter-spacing:2px; z-index:9999; box-shadow:0 0 20px rgba(0,255,136,0.3); animation:toastIn 0.3s; }
+@keyframes toastIn { from{opacity:0;transform:translate(-50%,20px);} to{opacity:1;transform:translate(-50%,0);} }
 </style>
 
 </head>
 <body>
-
 <div id="app"></div>
 
 <script>
@@ -166,21 +194,66 @@ const PAY = { Allstate: 14.50, Farmers: 14.50, 'FI-NC': 14.50, 'FI-DH': 14.50 };
 const CC = { Allstate: '#40c8ff', Farmers: '#ffaa00', 'FI-NC': '#e040fb', 'FI-DH': '#ffd54f' };
 const CLIENT_LABELS = { Allstate: 'Allstate', Farmers: 'Farmers', 'FI-NC': 'FI — No Contact', 'FI-DH': 'FI — Door Hanger' };
 
+// Follow-up window in hours - if call attempt not followed by text within this, flag it
+const FOLLOWUP_HOURS = 24;
+
+// === TEMPLATE LIBRARY ===
+// Each template returns an object: { title, desc, build(job, name) -> string, warn? }
 const TEMPLATES = {
-  Allstate: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`,
-  Farmers: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`,
+  Allstate: [
+    {
+      key: 'intro',
+      title: '📋 Standard Intro',
+      desc: 'First contact - heads up I am coming',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`
+    },
+    {
+      key: 'busy',
+      title: '⏰ Been Busy / Coming This Week',
+      desc: 'You called, no answer - just letting them know',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services. I tried to reach you about the exterior survey at ${j.address} (claim #${j.claimNumber}). My week has been busy but I will be stopping by sometime this week to complete it. This is EXTERIOR ONLY — you do not need to be home. Thanks for your patience!`
+    },
+    {
+      key: 'lasttry',
+      title: '⚠️ LAST TRY - Before Refused',
+      desc: 'Final attempt warning - cannot reach / no access',
+      warn: true,
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services regarding claim #${j.claimNumber} at ${j.address}. I have made multiple attempts to reach you and complete the exterior survey without success. This is my final attempt before I have to report the inspection as REFUSED, which may affect your claim. Please reply or call me back today so I can complete this. Thank you.`
+    }
+  ],
+  Farmers: [
+    {
+      key: 'intro',
+      title: '📋 Standard Intro',
+      desc: 'First contact - heads up I am coming',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`
+    },
+    {
+      key: 'busy',
+      title: '⏰ Been Busy / Coming This Week',
+      desc: 'You called, no answer - just letting them know',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services. I tried to reach you about the exterior survey at ${j.address} (claim #${j.claimNumber}). It has been a busy week on my end but I will be stopping by sometime this week to take care of it. EXTERIOR ONLY — no need to be home. Thanks for your patience!`
+    },
+    {
+      key: 'lasttry',
+      title: '⚠️ LAST TRY - Before Refused',
+      desc: 'Final attempt warning - cannot reach / no access',
+      warn: true,
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services regarding claim #${j.claimNumber} at ${j.address}. I have tried multiple times to reach you and complete the exterior survey without success. This is my final attempt before I must report the inspection as REFUSED, which may impact your claim. Please reply or call me back today. Thank you.`
+    }
+  ]
 };
 
-// LOAD saved jobs from localStorage
+function getTemplates(client) { return TEMPLATES[client] || []; }
+
+// LOAD saved data
 function loadSaved() {
   try {
-    const saved = localStorage.getItem('routepro_jobs');
-    const savedDone = localStorage.getItem('routepro_done');
-    const savedName = localStorage.getItem('routepro_name');
     return {
-      jobs: saved ? JSON.parse(saved) : null,
-      done: savedDone ? JSON.parse(savedDone) : null,
-      name: savedName || null
+      jobs: JSON.parse(localStorage.getItem('routepro_jobs') || 'null'),
+      done: JSON.parse(localStorage.getItem('routepro_done') || 'null'),
+      name: localStorage.getItem('routepro_name') || null,
+      contactLog: JSON.parse(localStorage.getItem('routepro_contactlog') || '{}')
     };
   } catch(e) { return {}; }
 }
@@ -190,6 +263,7 @@ function saveData() {
     localStorage.setItem('routepro_jobs', JSON.stringify(state.jobs));
     localStorage.setItem('routepro_done', JSON.stringify(state.done));
     localStorage.setItem('routepro_name', state.name);
+    localStorage.setItem('routepro_contactlog', JSON.stringify(state.contactLog));
   } catch(e) {}
 }
 
@@ -209,23 +283,66 @@ let state = {
   name: saved.name || 'Your Name',
   editName: false,
   modal: null,
+  selectedTemplate: 'intro',
   optimized: false,
   userLat: null,
   userLng: null,
-  // Form fields stored separately so inputs don't re-render
+  // Contact log: { jobId: { calls: [{time, type}], texts: [{time, type}], coords: {lat, lng}, travelMin: number } }
+  contactLog: saved.contactLog || {},
   form: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' }
 };
 
 function isFI(client) { return client === 'FI-NC' || client === 'FI-DH'; }
 
-// Only re-render when NOT on the add tab with active inputs
+// === JOB TIMER ===
+function startJobTimer(jobId) {
+  if (!state.contactLog[jobId]) state.contactLog[jobId] = { calls:[], texts:[] };
+  state.contactLog[jobId].timerStart = Date.now();
+  state.contactLog[jobId].timerEnd = null;
+  saveData();
+  showToast('⏱ Timer started');
+  render();
+}
+
+function stopJobTimer(jobId) {
+  const log = state.contactLog[jobId];
+  if (!log || !log.timerStart) return;
+  log.timerEnd = Date.now();
+  const elapsed = log.timerEnd - log.timerStart;
+  if (!log.totalTimeMs) log.totalTimeMs = 0;
+  log.totalTimeMs += elapsed;
+  log.timerStart = null;
+  saveData();
+  showToast(`⏱ ${formatDuration(elapsed)} logged`);
+  render();
+}
+
+function getTimerStatus(jobId) {
+  const log = state.contactLog[jobId];
+  if (!log) return { running: false, totalMs: 0 };
+  if (log.timerStart) {
+    const liveElapsed = Date.now() - log.timerStart;
+    return { running: true, totalMs: (log.totalTimeMs || 0) + liveElapsed, liveMs: liveElapsed };
+  }
+  return { running: false, totalMs: log.totalTimeMs || 0 };
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s.toString().padStart(2,'0')}s`;
+  return `${s}s`;
+}
+
 function setState(updates, skipSave) {
   Object.assign(state, updates);
   if (!skipSave) saveData();
   render();
 }
 
-// Read all form field values from DOM before any render
 function syncFormFromDOM() {
   const fields = ['address','contactName','contactPhone','claimNumber'];
   fields.forEach(f => {
@@ -234,30 +351,176 @@ function syncFormFromDOM() {
   });
 }
 
-// GPS only updates map dot, never full re-render
+// === GPS ===
 let gpsWatchId = null;
 function startGPS() {
   if (gpsWatchId !== null) return;
   if (!navigator.geolocation) return;
   gpsWatchId = navigator.geolocation.watchPosition(
     pos => {
+      const firstFix = state.userLat === null;
       state.userLat = pos.coords.latitude;
       state.userLng = pos.coords.longitude;
-      // Only update the status bar text, never full re-render
       const statusEl = document.getElementById('map-status-text');
-      if (statusEl) statusEl.innerHTML = `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span>`;
-      // Update map dot position if map is open
+      if (statusEl) statusEl.innerHTML = `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span><span style="color:var(--muted);margin-left:auto;">${state.jobs.filter(j=>!state.done.includes(j.id)).length} stops pending</span>`;
       if (state.tab === 'map' && window._youMarker) {
         window._youMarker.setLatLng([state.userLat, state.userLng]);
       } else if (state.tab === 'map' && window._leafletMap && state.userLat) {
         addYouMarker(window._leafletMap);
       }
+      // First fix: refresh travel times on the route view
+      if (firstFix && state.tab === 'route') {
+        refreshAllTravelTimes();
+      }
     },
-    err => {},
+    err => {
+      const statusEl = document.getElementById('map-status-text');
+      if (statusEl) statusEl.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:var(--red);"></div><span style="color:var(--red)">GPS unavailable</span>`;
+    },
     { enableHighAccuracy: true, maximumAge: 15000 }
   );
 }
 
+// Auto-start GPS once at app launch so travel times can populate
+function initLocationServices() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      state.userLat = pos.coords.latitude;
+      state.userLng = pos.coords.longitude;
+      refreshAllTravelTimes();
+    },
+    err => {},
+    { enableHighAccuracy: true, maximumAge: 60000, timeout: 10000 }
+  );
+  startGPS();
+}
+
+// === TRAVEL TIME ===
+// Using haversine + average city speed of 30 mph as a quick estimate.
+// More accurate routing would need a paid API; this gets you in the ballpark.
+function haversineMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Geocode cache so we don't hammer Nominatim
+const geocodeCache = JSON.parse(localStorage.getItem('routepro_geocache') || '{}');
+function saveGeocache() {
+  try { localStorage.setItem('routepro_geocache', JSON.stringify(geocodeCache)); } catch(e) {}
+}
+
+async function geocodeAddress(address) {
+  if (geocodeCache[address]) return geocodeCache[address];
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+    const data = await r.json();
+    if (data[0]) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      geocodeCache[address] = coords;
+      saveGeocache();
+      return coords;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function refreshAllTravelTimes() {
+  if (!state.userLat) return;
+  for (const job of state.jobs) {
+    if (state.done.includes(job.id)) continue;
+    const coords = await geocodeAddress(job.address);
+    if (!coords) continue;
+    const miles = haversineMiles(state.userLat, state.userLng, coords.lat, coords.lng);
+    // 30 mph avg = 2 minutes per mile
+    const minutes = Math.max(1, Math.round(miles * 2));
+    if (!state.contactLog[job.id]) state.contactLog[job.id] = { calls:[], texts:[] };
+    state.contactLog[job.id].travelMin = minutes;
+    state.contactLog[job.id].travelMiles = miles;
+    // Update just this card's chip without full re-render
+    const chip = document.getElementById(`travel-${job.id}`);
+    if (chip) chip.innerHTML = `🚗 ${minutes} min · ${miles.toFixed(1)} mi`;
+  }
+  saveData();
+}
+
+// === CONTACT LOGGING ===
+function logCall(jobId) {
+  if (!state.contactLog[jobId]) state.contactLog[jobId] = { calls:[], texts:[] };
+  if (!state.contactLog[jobId].calls) state.contactLog[jobId].calls = [];
+  state.contactLog[jobId].calls.push({ time: Date.now() });
+  saveData();
+}
+
+function logText(jobId, templateKey) {
+  if (!state.contactLog[jobId]) state.contactLog[jobId] = { calls:[], texts:[] };
+  if (!state.contactLog[jobId].texts) state.contactLog[jobId].texts = [];
+  state.contactLog[jobId].texts.push({ time: Date.now(), type: templateKey });
+  saveData();
+}
+
+function getCallCount(jobId) {
+  return (state.contactLog[jobId]?.calls || []).length;
+}
+
+function getLastCall(jobId) {
+  const calls = state.contactLog[jobId]?.calls || [];
+  return calls.length ? calls[calls.length - 1].time : null;
+}
+
+function getLastText(jobId) {
+  const texts = state.contactLog[jobId]?.texts || [];
+  return texts.length ? texts[texts.length - 1].time : null;
+}
+
+// Returns true if a call was made and no follow-up text was sent within FOLLOWUP_HOURS
+function isFollowupDue(jobId) {
+  const lastCall = getLastCall(jobId);
+  if (!lastCall) return false;
+  const lastText = getLastText(jobId);
+  if (lastText && lastText > lastCall) return false; // already followed up
+  const hoursSince = (Date.now() - lastCall) / (1000 * 60 * 60);
+  return hoursSince >= 0; // show countdown; "due" means visible
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return min + 'm ago';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + 'h ago';
+  const day = Math.floor(hr / 24);
+  return day + 'd ago';
+}
+
+function callJob(jobId) {
+  const job = state.jobs.find(j => j.id === jobId);
+  if (!job || !job.contactPhone) {
+    showToast('No phone number for this job');
+    return;
+  }
+  logCall(jobId);
+  showToast(`📞 Calling ${job.contactName} · attempt #${getCallCount(jobId)}`);
+  // Trigger the actual phone dialer
+  window.location.href = `tel:${job.contactPhone.replace(/\D/g,'')}`;
+  // Re-render after a beat so the chip updates
+  setTimeout(() => render(), 500);
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// === RENDER ===
 function render() {
   const app = document.getElementById('app');
   const pending = state.jobs.filter(j => !state.done.includes(j.id));
@@ -327,20 +590,105 @@ function render() {
 
 function renderModal() {
   const j = state.modal;
-  const msg = TEMPLATES[j.client] ? TEMPLATES[j.client](j, state.name) : '';
+  if (!j) return '';
+  const templates = getTemplates(j.client);
+  const selected = templates.find(t => t.key === state.selectedTemplate) || templates[0];
+  const msg = selected ? selected.build(j, state.name) : '';
+  const callCount = getCallCount(j.id);
+  const lastCall = getLastCall(j.id);
+
   return `
-    <div class="modal-overlay" onclick="setState({modal:null})">
+    <div class="modal-overlay" onclick="closeModal()">
       <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-label">PREVIEW TEXT MESSAGE</div>
         <div class="modal-name">${j.contactName}</div>
         <div class="modal-sub" style="color:${CC[j.client]}">${j.client} · ${j.contactPhone}</div>
+        ${callCount > 0 ? `
+          <div style="background:rgba(255,170,0,0.1);border:1px solid #ffaa0044;border-radius:6px;padding:8px 10px;margin-bottom:14px;font-size:11px;color:var(--orange);font-family:'Rajdhani',sans-serif;">
+            📞 ${callCount} call attempt${callCount>1?'s':''} · last ${timeAgo(lastCall)}
+          </div>
+        ` : ''}
+        <div class="modal-label" style="margin-top:4px;">PICK A TEMPLATE</div>
+        <div class="template-picker">
+          ${templates.map(t => `
+            <button class="template-option ${t.key===state.selectedTemplate?'active':''} ${t.warn?'warn':''}" onclick="pickTemplate('${t.key}')">
+              <div class="template-title">${t.title}</div>
+              <div class="template-desc">${t.desc}</div>
+            </button>
+          `).join('')}
+        </div>
+        <div class="modal-label">PREVIEW</div>
         <div class="msg-preview">${msg}</div>
         <div class="modal-btns">
-          <button class="modal-cancel" onclick="setState({modal:null})">CANCEL</button>
+          <button class="modal-cancel" onclick="closeModal()">CANCEL</button>
           <button class="modal-send" onclick="sendSMS()">📱 SEND TEXT</button>
         </div>
       </div>
     </div>`;
+}
+
+function pickTemplate(key) {
+  state.selectedTemplate = key;
+  render();
+}
+
+function closeModal() {
+  state.modal = null;
+  state.selectedTemplate = 'intro';
+  render();
+}
+
+function renderJobExtras(job) {
+  const log = state.contactLog[job.id] || {};
+  const callCount = (log.calls || []).length;
+  const lastCall = getLastCall(job.id);
+  const lastText = getLastText(job.id);
+  const travelMin = log.travelMin;
+  const travelMiles = log.travelMiles;
+
+  let chips = [];
+
+  // Travel time chip
+  if (travelMin) {
+    chips.push(`<span class="extra-chip travel" id="travel-${job.id}">🚗 ${travelMin} min · ${travelMiles.toFixed(1)} mi</span>`);
+  } else if (state.userLat) {
+    chips.push(`<span class="extra-chip travel" id="travel-${job.id}">🚗 calculating...</span>`);
+  } else {
+    chips.push(`<span class="extra-chip travel" id="travel-${job.id}" style="opacity:0.5;">🚗 GPS off</span>`);
+  }
+
+  // Call attempt chip
+  if (callCount > 0) {
+    chips.push(`<span class="extra-chip attempts">📞 ${callCount}x · ${timeAgo(lastCall)}</span>`);
+  }
+
+  // Last text chip
+  if (lastText) {
+    chips.push(`<span class="extra-chip last-call">💬 texted ${timeAgo(lastText)}</span>`);
+  }
+
+  // Follow-up needed chip
+  if (lastCall && (!lastText || lastText < lastCall)) {
+    const hoursSince = (Date.now() - lastCall) / (1000 * 60 * 60);
+    if (hoursSince < FOLLOWUP_HOURS) {
+      chips.push(`<span class="extra-chip followup-due">⚠️ NEEDS FOLLOW-UP TEXT</span>`);
+    }
+  }
+
+  // Refused warning - 3+ call attempts
+  if (callCount >= 3) {
+    chips.push(`<span class="extra-chip refused-warn">⛔ ${callCount} ATTEMPTS - SEND LAST TRY</span>`);
+  }
+
+  // Timer chip
+  const timer = getTimerStatus(job.id);
+  if (timer.running) {
+    chips.push(`<span class="timer-chip running" id="timer-${job.id}">⏱ ${formatDuration(timer.totalMs)}</span>`);
+  } else if (timer.totalMs > 0) {
+    chips.push(`<span class="timer-chip done">⏱ ${formatDuration(timer.totalMs)}</span>`);
+  }
+
+  return chips.length ? `<div class="job-extra">${chips.join('')}</div>` : '';
 }
 
 function renderRoute() {
@@ -357,6 +705,7 @@ function renderRoute() {
       const isFIJob = isFI(job.client);
       const priorityColor = job.priority==='high' ? '#ef5350' : job.priority==='medium' ? '#ff9800' : '#4a6572';
       const priorityLabel = job.priority==='high' ? '● HIGH' : job.priority==='medium' ? '● MED' : '○ LOW';
+      const hasPhone = !isFIJob && job.contactPhone;
       return `
         <div class="job-card ${d?'done':''}">
           <div class="side-bar" style="background:${d?'#1a2f3a':c}"></div>
@@ -372,10 +721,18 @@ function renderRoute() {
               <div class="job-meta">${job.claimNumber}${!isFIJob ? ' · '+job.contactName : ''}</div>
               <div class="job-type">${job.client==='FI-NC' ? '🔍 NO CONTACT — INSPECT & LEAVE' : job.client==='FI-DH' ? '🟡 KNOCK & LEAVE DOOR HANGER' : '🏠 EXTERIOR ONLY'}</div>
               <div class="job-pay ${isFIJob?'fi-pay':''}">$${PAY[job.client].toFixed(2)}</div>
+              ${renderJobExtras(job)}
             </div>
             <div class="job-actions">
               <button class="jbtn" style="color:var(--blue);border-color:#29b6f644;" onclick="openMap('${job.address}')">📍 MAP</button>
+              ${hasPhone ? `<button class="jbtn" style="color:var(--green);border-color:#00ff8866;" onclick="callJob(${job.id})">📞 CALL</button>` : ''}
               ${!isFIJob ? `<button class="jbtn" style="color:${c};border-color:${c}44;" onclick="openText(${job.id})">📱 TEXT</button>` : `<button class="jbtn" style="color:var(--muted);border-color:#1a2f3a;opacity:0.4;cursor:default;">NO TEXT</button>`}
+              ${(() => {
+                const t = getTimerStatus(job.id);
+                if (d) return '';
+                if (t.running) return `<button class="jbtn timer-stop" onclick="stopJobTimer(${job.id})">⏹ STOP</button>`;
+                return `<button class="jbtn timer-start" onclick="startJobTimer(${job.id})">${t.totalMs>0?'▶ RESUME':'▶ START'}</button>`;
+              })()}
               <button class="jbtn" style="color:${d?'var(--green)':'var(--muted)'};border-color:${d?'#00e67644':'#1a2f3a'};" onclick="toggleDone(${job.id})">${d?'✓ DONE':'○ DONE'}</button>
               <button class="jbtn" style="color:var(--red);border-color:#ef535044;" onclick="removeJob(${job.id})">✕</button>
             </div>
@@ -402,15 +759,22 @@ function renderText() {
         </div>
         ${cjobs.length===0
           ? `<div class="empty-msg">All ${client} surveys complete ✓</div>`
-          : cjobs.map(job => `
-            <div class="text-job-row">
-              <div>
-                <div class="text-job-name">${job.contactName}</div>
-                <div class="text-job-addr">${job.address.split(',')[0]}</div>
-                <div class="text-job-addr">${job.claimNumber}</div>
-              </div>
-              <button class="text-send-btn" style="background:${c}22;color:${c};border-color:${c}" onclick="openText(${job.id})">📱 TEXT</button>
-            </div>`).join('')
+          : cjobs.map(job => {
+              const callCount = getCallCount(job.id);
+              const lastCall = getLastCall(job.id);
+              const lastText = getLastText(job.id);
+              const needsFollowup = lastCall && (!lastText || lastText < lastCall);
+              return `
+                <div class="text-job-row" style="${needsFollowup?'border-color:var(--red);background:rgba(255,82,82,0.05);':''}">
+                  <div>
+                    <div class="text-job-name">${job.contactName}</div>
+                    <div class="text-job-addr">${job.address.split(',')[0]}</div>
+                    <div class="text-job-addr">${job.claimNumber}</div>
+                    ${callCount > 0 ? `<div class="text-job-addr" style="color:var(--orange);margin-top:3px;">📞 ${callCount}x ${timeAgo(lastCall)}${needsFollowup?' · NEEDS FOLLOW-UP':''}</div>` : ''}
+                  </div>
+                  <button class="text-send-btn" style="background:${c}22;color:${c};border-color:${c}" onclick="openText(${job.id})">📱 TEXT</button>
+                </div>`;
+            }).join('')
         }
       </div>`;
   });
@@ -522,6 +886,26 @@ function renderStats(earned, pendingPay, totalPay) {
   const fiDHDone = fiDHJobs2.filter(j => state.done.includes(j.id)).length;
   const pct = state.jobs.length ? Math.round((state.done.length/state.jobs.length)*100) : 0;
 
+  // Contact log totals
+  const totalCalls = Object.values(state.contactLog).reduce((s, l) => s + ((l.calls||[]).length), 0);
+  const totalTexts = Object.values(state.contactLog).reduce((s, l) => s + ((l.texts||[]).length), 0);
+  const needsFollowup = state.jobs.filter(j => {
+    const lc = getLastCall(j.id);
+    const lt = getLastText(j.id);
+    return lc && (!lt || lt < lc) && !state.done.includes(j.id);
+  }).length;
+
+  // Time tracking stats - only count finished (non-running) timers
+  const timedJobs = state.jobs.filter(j => {
+    const log = state.contactLog[j.id];
+    return log && log.totalTimeMs > 0 && !log.timerStart;
+  });
+  const totalTimeMs = timedJobs.reduce((s, j) => s + state.contactLog[j.id].totalTimeMs, 0);
+  const avgTimeMs = timedJobs.length ? totalTimeMs / timedJobs.length : 0;
+  const totalHours = totalTimeMs / (1000 * 60 * 60);
+  const earnedFromTimed = timedJobs.filter(j => state.done.includes(j.id)).reduce((s, j) => s + PAY[j.client], 0);
+  const hourlyRate = totalHours > 0 ? (earnedFromTimed / totalHours) : 0;
+
   return `
     <div class="stats-card">
       <div class="stats-title">EARNINGS TODAY</div>
@@ -538,6 +922,44 @@ function renderStats(earned, pendingPay, totalPay) {
         <div style="color:var(--text);font-weight:bold;font-family:'Rajdhani',sans-serif;">Total Day</div>
         <div class="stat-amount" style="color:var(--text);font-size:22px;">$${totalPay.toFixed(2)}</div>
       </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">CONTACT ACTIVITY</div>
+      <div class="stat-row">
+        <div><div class="stat-name">Calls Made</div><div class="stat-sub">across all jobs</div></div>
+        <div class="stat-amount" style="color:var(--green)">${totalCalls}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Texts Sent</div><div class="stat-sub">across all jobs</div></div>
+        <div class="stat-amount" style="color:var(--blue)">${totalTexts}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Need Follow-Up</div><div class="stat-sub">called but not texted</div></div>
+        <div class="stat-amount" style="color:${needsFollowup?'var(--red)':'var(--muted)'}">${needsFollowup}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">TIME TRACKING</div>
+      <div class="stat-row">
+        <div><div class="stat-name">Jobs Timed</div><div class="stat-sub">${timedJobs.length} of ${state.jobs.length}</div></div>
+        <div class="stat-amount" style="color:var(--green)">${timedJobs.length}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Total Time</div><div class="stat-sub">on-site work</div></div>
+        <div class="stat-amount" style="color:var(--blue)">${formatDuration(totalTimeMs)}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Avg per Job</div><div class="stat-sub">across timed jobs</div></div>
+        <div class="stat-amount" style="color:var(--orange)">${timedJobs.length ? formatDuration(avgTimeMs) : '—'}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <div style="color:var(--text);font-weight:bold;font-family:'Rajdhani',sans-serif;">Hourly Rate</div>
+        <div class="stat-amount" style="color:${hourlyRate>=20?'var(--green)':hourlyRate>=15?'var(--orange)':'var(--red)'};font-size:22px;">$${hourlyRate.toFixed(2)}/hr</div>
+      </div>
+      ${timedJobs.length === 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center;">Tap ▶ START on a job when you arrive to track time</div>` : ''}
     </div>
 
     <div class="stats-card">
@@ -596,18 +1018,40 @@ function openMap(addr) {
 
 function openText(id) {
   const job = state.jobs.find(j => j.id === id);
-  if (job && !isFI(job.client)) setState({ modal: job });
+  if (!job || isFI(job.client)) return;
+  // Auto-pick the right template based on call history
+  const callCount = getCallCount(id);
+  let defaultTemplate = 'intro';
+  if (callCount >= 3) defaultTemplate = 'lasttry';
+  else if (callCount >= 1) defaultTemplate = 'busy';
+  state.modal = job;
+  state.selectedTemplate = defaultTemplate;
+  render();
 }
 
 function sendSMS() {
   const j = state.modal;
   if (!j) return;
-  const msg = TEMPLATES[j.client](j, state.name);
+  const templates = getTemplates(j.client);
+  const selected = templates.find(t => t.key === state.selectedTemplate) || templates[0];
+  if (!selected) return;
+  const msg = selected.build(j, state.name);
+  logText(j.id, selected.key);
   window.open(`sms:${j.contactPhone.replace(/\D/g,'')}?body=${encodeURIComponent(msg)}`, '_blank');
-  setState({ modal: null });
+  showToast(`💬 Text sent · ${selected.title}`);
+  closeModal();
 }
 
 function toggleDone(id) {
+  // If marking done while timer is running, stop it first
+  const log = state.contactLog[id];
+  if (!state.done.includes(id) && log && log.timerStart) {
+    const elapsed = Date.now() - log.timerStart;
+    log.timerEnd = Date.now();
+    log.totalTimeMs = (log.totalTimeMs || 0) + elapsed;
+    log.timerStart = null;
+    showToast(`⏱ ${formatDuration(elapsed)} logged`);
+  }
   const done = state.done.includes(id)
     ? state.done.filter(x => x !== id)
     : [...state.done, id];
@@ -619,6 +1063,7 @@ function toggleDone(id) {
 function removeJob(id) {
   state.jobs = state.jobs.filter(j => j.id !== id);
   state.done = state.done.filter(x => x !== id);
+  delete state.contactLog[id];
   saveData();
   render();
 }
@@ -662,6 +1107,8 @@ function addJob() {
   state.optimized = false;
   saveData();
   render();
+  // Refresh travel time for the new job
+  if (state.userLat) refreshAllTravelTimes();
 }
 
 function renderMap() {
@@ -736,27 +1183,26 @@ function buildMap() {
     const isDone = state.done.includes(job.id);
     const color = isDone ? '#555' : (colorsMap[job.client] || '#00ff88');
     const label = isDone ? '✓' : String(idx+1);
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(job.address)}&limit=1`)
-      .then(r => r.json())
-      .then(data => {
-        if (!data[0]) return;
-        const lat = parseFloat(data[0].lat);
-        const lng = parseFloat(data[0].lon);
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="background:${color};color:#000;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.5);"><span style="transform:rotate(45deg)">${label}</span></div>`,
-          iconSize:[30,30], iconAnchor:[15,30]
-        });
-        L.marker([lat,lng],{icon}).addTo(map).bindPopup(
-          `<div style="font-family:monospace;font-size:12px;min-width:180px;line-height:1.6;">
-            <strong style="color:${color}">${job.client}</strong><br>
-            ${job.address}<br>
-            <span style="color:#888">${job.claimNumber}</span>
-            ${job.contactName ? `<br>👤 ${job.contactName}` : ''}
-            ${isDone ? '<br><span style="color:#00c853">✓ DONE</span>' : ''}
-          </div>`
-        );
+    geocodeAddress(job.address).then(coords => {
+      if (!coords) return;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:${color};color:#000;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.5);"><span style="transform:rotate(45deg)">${label}</span></div>`,
+        iconSize:[30,30], iconAnchor:[15,30]
       });
+      const log = state.contactLog[job.id] || {};
+      const travelText = log.travelMin ? `<br>🚗 ${log.travelMin} min · ${log.travelMiles.toFixed(1)} mi from you` : '';
+      L.marker([coords.lat, coords.lng],{icon}).addTo(map).bindPopup(
+        `<div style="font-family:monospace;font-size:12px;min-width:180px;line-height:1.6;">
+          <strong style="color:${color}">${job.client}</strong><br>
+          ${job.address}<br>
+          <span style="color:#888">${job.claimNumber}</span>
+          ${job.contactName ? `<br>👤 ${job.contactName}` : ''}
+          ${travelText}
+          ${isDone ? '<br><span style="color:#00c853">✓ DONE</span>' : ''}
+        </div>`
+      );
+    });
   });
 
   if (state.userLat) {
@@ -765,6 +1211,23 @@ function buildMap() {
 }
 
 render();
+initLocationServices();
+
+// Live timer tick - updates running timer chips every second without full re-render
+setInterval(() => {
+  state.jobs.forEach(job => {
+    const t = getTimerStatus(job.id);
+    if (t.running) {
+      const chip = document.getElementById(`timer-${job.id}`);
+      if (chip) chip.innerHTML = `⏱ ${formatDuration(t.totalMs)}`;
+    }
+  });
+}, 1000);
+
+// Re-render every minute so "time ago" labels stay fresh
+setInterval(() => {
+  if (state.tab === 'route' || state.tab === 'text') render();
+}, 60000);
 </script>
 
 </body>
