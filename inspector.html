@@ -9,24 +9,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
 
 :root {
-–bg: #060d10;
-–surface: #0e1f26;
-–surface2: #142530;
+–bg: #121e25;
+–surface: #1a3340;
+–surface2: #20404f;
 –green: #00ff88;
-–green-dim: #00ff8825;
-–blue: #40c8ff;
-–blue-dim: #40c8ff25;
-–orange: #ffaa00;
-–orange-dim: #ffaa0025;
-–purple: #e040fb;
-–purple-dim: #e040fb25;
-–red: #ff5252;
-–red-dim: #ff525225;
+–green-dim: #00ff8830;
+–blue: #5dd4ff;
+–blue-dim: #5dd4ff30;
+–orange: #ffb733;
+–orange-dim: #ffb73330;
+–purple: #ee5fff;
+–purple-dim: #ee5fff30;
+–red: #ff6b6b;
+–red-dim: #ff6b6b30;
 –yellow: #ffd54f;
-–yellow-dim: #ffd54f25;
+–yellow-dim: #ffd54f30;
 –text: #ffffff;
-–muted: #7a9aaa;
-–border: #1e3a4a;
+–muted: #b8d4e0;
+–border: #2e5468;
 }
 
 - { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -36,7 +36,7 @@
   ::-webkit-scrollbar-thumb { background:var(–green-dim); border-radius:2px; }
 
 /* HEADER */
-.header { background: linear-gradient(135deg, #0a1a0e 0%, #0a1624 100%); border-bottom: 1px solid var(–green); padding: 16px 16px 12px; position: sticky; top:0; z-index:100; box-shadow: 0 4px 20px rgba(0,230,118,0.1); }
+.header { background: linear-gradient(135deg, #1a2e22 0%, #1a2a3e 100%); border-bottom: 1px solid var(–green); padding: 16px 16px 12px; position: sticky; top:0; z-index:100; box-shadow: 0 4px 20px rgba(0,230,118,0.15); }
 .header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
 .header-label { font-size:9px; letter-spacing:4px; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
 .header-title { font-size:22px; font-weight:700; font-family:‘Rajdhani’,sans-serif; letter-spacing:2px; }
@@ -45,16 +45,16 @@
 .survey-rate { font-size:10px; color:var(–green); opacity:0.7; }
 .name-row { display:flex; align-items:center; gap:6px; margin-top:2px; }
 .name-display { font-size:11px; color:#86efac; cursor:pointer; }
-.name-input { background:rgba(0,0,0,0.4); border:1px solid var(–border); border-radius:4px; color:var(–text); font-size:11px; padding:3px 8px; width:160px; outline:none; }
+.name-input { background:rgba(255,255,255,0.1); border:1px solid var(–border); border-radius:4px; color:var(–text); font-size:11px; padding:3px 8px; width:160px; outline:none; }
 
 .stats-row { display:flex; gap:8px; }
-.stat-box { flex:1; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 10px; }
+.stat-box { flex:1; background:rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px; }
 .stat-label { font-size:9px; letter-spacing:2px; margin-bottom:3px; font-weight:700; }
 .stat-value { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
 
 /* TABS */
-.tabs { display:flex; background:#0a1820; border-bottom:2px solid var(–border); overflow-x:auto; }
-.tab { flex:1; min-width:60px; padding:11px 4px; background:none; border:none; border-bottom:3px solid transparent; color:#6a8a9a; font-size:10px; letter-spacing:1px; font-weight:bold; cursor:pointer; transition:all 0.2s; font-family:‘Rajdhani’,sans-serif; white-space:nowrap; }
+.tabs { display:flex; background:#1a2a35; border-bottom:2px solid var(–border); overflow-x:auto; }
+.tab { flex:1; min-width:60px; padding:11px 4px; background:none; border:none; border-bottom:3px solid transparent; color:#a0c0d0; font-size:10px; letter-spacing:1px; font-weight:bold; cursor:pointer; transition:all 0.2s; font-family:‘Rajdhani’,sans-serif; white-space:nowrap; }
 .tab.active { border-bottom-color:var(–green); color:var(–green); }
 
 /* CONTENT */
@@ -67,8 +67,8 @@
 .btn-route { background:linear-gradient(135deg,#0a1a2e,#0d2f5c); border-color:var(–blue); color:var(–blue); }
 
 /* JOB CARDS */
-.job-card { background:#0e2030; border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid #1e3a4a; position:relative; overflow:hidden; transition:opacity 0.3s; }
-.job-card.done { opacity:0.35; }
+.job-card { background:#1f3848; border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid #2e5468; position:relative; overflow:hidden; transition:opacity 0.3s; }
+.job-card.done { opacity:0.45; }
 .job-card .side-bar { position:absolute; left:0; top:0; bottom:0; width:4px; }
 .job-inner { margin-left:10px; display:flex; justify-content:space-between; gap:8px; }
 .job-info { flex:1; min-width:0; }
@@ -76,14 +76,14 @@
 .badge { font-size:10px; border-radius:4px; padding:3px 8px; letter-spacing:1px; font-weight:bold; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
 .priority-dot { font-size:10px; font-weight:bold; }
 .job-address { font-size:13px; color:#ffffff; margin-bottom:3px; font-weight:600; }
-.job-meta { font-size:11px; color:#7a9aaa; margin-bottom:3px; }
+.job-meta { font-size:11px; color:#b8d4e0; margin-bottom:3px; }
 .job-type { font-size:10px; color:var(–green); margin-bottom:5px; font-weight:600; }
 .job-pay { font-size:18px; font-weight:bold; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
 .job-pay.fi-pay { color:var(–purple); }
 
 /* NEW: Travel + Call info row */
 .job-extra { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; font-size:10px; font-family:‘Rajdhani’,sans-serif; }
-.extra-chip { background:rgba(0,0,0,0.4); border:1px solid var(–border); border-radius:4px; padding:3px 7px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }
+.extra-chip { background:rgba(255,255,255,0.08); border:1px solid var(–border); border-radius:4px; padding:3px 7px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }
 .extra-chip.travel { color:var(–blue); border-color:#40c8ff44; }
 .extra-chip.attempts { color:var(–orange); border-color:#ffaa0044; }
 .extra-chip.last-call { color:var(–muted); }
@@ -92,27 +92,27 @@
 @keyframes pulseRed { 0%,100%{opacity:1;} 50%{opacity:0.55;} }
 
 .job-actions { display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
-.jbtn { border-radius:6px; padding:6px 10px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; font-weight:bold; transition:all 0.15s; background:rgba(0,0,0,0.4); white-space:nowrap; }
+.jbtn { border-radius:6px; padding:6px 10px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; font-weight:bold; transition:all 0.15s; background:rgba(255,255,255,0.08); white-space:nowrap; }
 .jbtn:active { transform:scale(0.95); }
 
 /* FI BADGE */
 .fi-only-badge { background:var(–purple-dim); border:1px solid var(–purple); color:var(–purple); font-size:10px; border-radius:4px; padding:3px 8px; letter-spacing:1px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 
 /* MODAL */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
-.modal { background:#0a1a14; border:1px solid var(–green); border-radius:16px; padding:22px; max-width:380px; width:100%; max-height:90vh; overflow-y:auto; }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+.modal { background:#1a2e22; border:1px solid var(–green); border-radius:16px; padding:22px; max-width:380px; width:100%; max-height:90vh; overflow-y:auto; }
 .modal-label { font-size:9px; letter-spacing:3px; color:var(–green); margin-bottom:4px; font-family:‘Rajdhani’,sans-serif; }
 .modal-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
 .modal-sub { font-size:11px; margin-bottom:14px; }
-.msg-preview { background:rgba(255,255,255,0.04); border-radius:10px; padding:12px; font-size:12px; color:#d1fae5; line-height:1.7; margin-bottom:16px; border:1px solid var(–border); }
+.msg-preview { background:rgba(255,255,255,0.08); border-radius:10px; padding:12px; font-size:12px; color:#d1fae5; line-height:1.7; margin-bottom:16px; border:1px solid var(–border); }
 .modal-btns { display:flex; gap:10px; }
 .modal-cancel { flex:1; padding:11px; border-radius:8px; background:var(–red-dim); border:1px solid var(–red); color:var(–red); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 .modal-send { flex:2; padding:11px; border-radius:8px; background:linear-gradient(135deg,#003d1a,#005724); border:1px solid var(–green); color:var(–green); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 
 /* TEMPLATE PICKER */
 .template-picker { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
-.template-option { background:rgba(0,0,0,0.35); border:1px solid var(–border); border-radius:8px; padding:10px 12px; cursor:pointer; transition:all 0.15s; text-align:left; color:var(–text); font-family:‘Share Tech Mono’,monospace; }
-.template-option.active { border-color:var(–green); background:rgba(0,255,136,0.08); box-shadow:0 0 12px rgba(0,255,136,0.15); }
+.template-option { background:rgba(255,255,255,0.06); border:1px solid var(–border); border-radius:8px; padding:10px 12px; cursor:pointer; transition:all 0.15s; text-align:left; color:var(–text); font-family:‘Share Tech Mono’,monospace; }
+.template-option.active { border-color:var(–green); background:rgba(0,255,136,0.15); box-shadow:0 0 12px rgba(0,255,136,0.2); }
 .template-option:active { transform:scale(0.98); }
 .template-title { font-size:11px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; letter-spacing:1px; margin-bottom:2px; }
 .template-desc { font-size:10px; color:var(–muted); }
@@ -123,10 +123,10 @@
 /* FORM */
 .form-card { background:var(–surface); border:1px solid var(–green-dim); border-radius:12px; padding:20px; }
 .form-label { font-size:9px; letter-spacing:2px; color:#86efac; margin-bottom:5px; font-family:‘Rajdhani’,sans-serif; }
-.form-input { width:100%; padding:10px 12px; background:rgba(0,0,0,0.4); border:1px solid var(–border); border-radius:6px; color:var(–text); font-size:13px; outline:none; margin-bottom:12px; font-family:‘Share Tech Mono’,monospace; }
+.form-input { width:100%; padding:10px 12px; background:rgba(255,255,255,0.08); border:1px solid var(–border); border-radius:6px; color:var(–text); font-size:13px; outline:none; margin-bottom:12px; font-family:‘Share Tech Mono’,monospace; }
 .form-input:focus { border-color:var(–green); }
 .toggle-group { display:flex; gap:8px; margin-bottom:12px; }
-.toggle-btn { flex:1; padding:10px; border-radius:6px; border:1px solid var(–border); background:rgba(0,0,0,0.3); color:var(–muted); cursor:pointer; font-size:11px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; transition:all 0.2s; }
+.toggle-btn { flex:1; padding:10px; border-radius:6px; border:1px solid var(–border); background:rgba(255,255,255,0.06); color:var(–muted); cursor:pointer; font-size:11px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; transition:all 0.2s; }
 .toggle-btn.active-allstate { background:var(–blue-dim); border-color:var(–blue); color:var(–blue); }
 .toggle-btn.active-farmers { background:var(–orange-dim); border-color:var(–orange); color:var(–orange); }
 .toggle-btn.active-fi { background:var(–purple-dim); border-color:var(–purple); color:var(–purple); }
@@ -152,12 +152,12 @@
 .carrier-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .carrier-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
 .carrier-tag { font-size:9px; border-radius:5px; padding:3px 10px; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
-.text-job-row { display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 12px; border:1px solid var(–border); margin-bottom:8px; }
+.text-job-row { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px; border:1px solid var(–border); margin-bottom:8px; }
 .text-job-name { font-size:12px; }
 .text-job-addr { font-size:10px; color:var(–muted); }
 .text-send-btn { border-radius:6px; padding:7px 12px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; font-weight:bold; letter-spacing:1px; }
 .fi-section { background:var(–surface); border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid var(–purple-dim); }
-.fi-job-row { background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 12px; border:1px solid var(–purple-dim); margin-bottom:8px; }
+.fi-job-row { background:rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px; border:1px solid var(–purple-dim); margin-bottom:8px; }
 .fi-no-contact { font-size:10px; color:var(–purple); margin-top:3px; }
 
 .empty-msg { text-align:center; color:var(–muted); font-size:12px; padding:12px; }
@@ -166,10 +166,10 @@
 
 /* MAP TAB */
 #map-container { width:100%; height:calc(100vh - 180px); position:relative; }
-.map-status { padding:14px 16px; background:#0a1820; border-bottom:1px solid var(–border); display:flex; align-items:center; gap:8px; font-size:11px; }
+.map-status { padding:14px 16px; background:#1a2a35; border-bottom:1px solid var(–border); display:flex; align-items:center; gap:8px; font-size:11px; }
 .map-dot { width:10px; height:10px; border-radius:50%; background:var(–green); box-shadow:0 0 8px var(–green); animation:pulse 1.5s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.6;transform:scale(1.3);} }
-.map-legend { padding:10px 16px; background:#0a1820; border-top:1px solid var(–border); display:flex; gap:14px; flex-wrap:wrap; font-size:10px; }
+.map-legend { padding:10px 16px; background:#1a2a35; border-top:1px solid var(–border); display:flex; gap:14px; flex-wrap:wrap; font-size:10px; }
 .legend-item { display:flex; align-items:center; gap:5px; }
 
 /* JOB TIMER */
@@ -550,15 +550,15 @@ function render() {
         </div>
       </div>
       <div class="stats-row">
-        <div class="stat-box" style="border:1px solid #00ff8860;background:#0a2a18;">
+        <div class="stat-box" style="border:1px solid #00ff8870;background:#15402a;">
           <div class="stat-label" style="color:var(--green);">EARNED</div>
           <div class="stat-value" style="color:var(--green);">$${earned.toFixed(2)}</div>
         </div>
-        <div class="stat-box" style="border:1px solid #40c8ff60;background:#0a1e2a;">
+        <div class="stat-box" style="border:1px solid #5dd4ff70;background:#1a3340;">
           <div class="stat-label" style="color:var(--blue);">PENDING</div>
           <div class="stat-value" style="color:var(--blue);">$${pendingPay.toFixed(2)}</div>
         </div>
-        <div class="stat-box" style="border:1px solid #ffaa0060;background:#1e1400;">
+        <div class="stat-box" style="border:1px solid #ffb73370;background:#3a2a0a;">
           <div class="stat-label" style="color:var(--orange);">DONE</div>
           <div class="stat-value" style="color:var(--orange);">${state.done.length}/${state.jobs.length}</div>
         </div>
