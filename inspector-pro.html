@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>FIRP Pro — Saint Bev</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f1a; --panel:#111a29; --panel2:#162238; --border:#1f3050;
+    --green:#4ade80; --green-dim:#1c3a28; --amber:#fbbf24; --red:#ef4444;
+    --blue:#60a5fa; --purple:#c084fc; --text:#e6edf3; --dim:#8b9bb4; --faint:#506680;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; overscroll-behavior:none;}
+  input,select,button,textarea{font-family:'JetBrains Mono',monospace;}
+  .app{max-width:520px; margin:0 auto; padding-bottom:90px; min-height:100vh;}
+
+  header{padding:16px 14px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:20;}
+  .brand{display:flex; justify-content:space-between; align-items:center;}
+  .brand h1{font-size:16px; letter-spacing:0.05em; color:var(--text);}
+  .brand h1 span{color:var(--green);}
+  .zone{font-size:10px; color:var(--faint); letter-spacing:0.1em;}
+
+  .topstats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:12px;}
+  .stat{border:1px solid var(--border); border-radius:8px; padding:8px 6px; text-align:center; background:var(--panel);}
+  .stat .lbl{font-size:8px; color:var(--faint); letter-spacing:0.1em;}
+  .stat .val{font-size:15px; font-weight:800; margin-top:3px;}
+  .stat.earned .val{color:var(--green);}
+  .stat.pending .val{color:var(--blue);}
+  .stat.done .val{color:var(--amber);}
+
+  main{padding:14px;}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block; animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0} to{opacity:1}}
+
+  h2.sec{font-size:13px; color:var(--green); letter-spacing:0.1em; margin-bottom:10px;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px;}
+
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:10px; color:var(--dim); letter-spacing:0.05em; margin-bottom:5px;}
+  .field input, .field select{width:100%; background:#0d1622; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:10px 12px; font-size:14px; outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--green);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--green); color:#0a0f1a; border:none; border-radius:8px; padding:12px 16px; font-weight:700; font-size:12px; letter-spacing:0.05em; cursor:pointer; width:100%;}
+  .btn.ghost{background:transparent; border:1px solid var(--border); color:var(--text);}
+  .btn.blue{background:var(--blue);}
+  .btn.small{padding:8px 10px; font-size:11px; width:auto;}
+  .btnrow{display:flex; gap:8px; flex-wrap:wrap;}
+
+  .wo{border-left:3px solid var(--blue); background:var(--panel); border:1px solid var(--border); border-left-width:3px; border-radius:8px; padding:10px; margin-bottom:8px;}
+  .wo.high{border-left-color:var(--red);}
+  .wo.med{border-left-color:var(--amber);}
+  .wo.low{border-left-color:var(--green);}
+  .wo.done{opacity:0.45;}
+  .wo-top{display:flex; justify-content:space-between; align-items:center;}
+  .tag{font-size:9px; padding:3px 7px; border:1px solid var(--blue); color:var(--blue); border-radius:5px;}
+  .prio{font-size:9px; display:flex; align-items:center; gap:4px;}
+  .prio .dot{width:5px; height:5px; border-radius:50%; background:var(--red);}
+  .prio.med .dot{background:var(--amber);}
+  .prio.low .dot{background:var(--green);}
+  .wo-addr{font-size:13px; font-weight:700; margin-top:6px;}
+  .wo-meta{font-size:10px; color:var(--dim); margin-top:4px;}
+  .wo-pay{font-size:14px; font-weight:800; color:var(--green); margin-top:6px;}
+  .wo-actions{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
+  .wo-actions a, .wo-actions button{flex:1; text-align:center; font-size:10px; padding:7px 4px; border-radius:6px; border:1px solid var(--border); color:var(--text); text-decoration:none; background:#0d1622; cursor:pointer;}
+  .wo-actions .done-btn{color:var(--green); border-color:var(--green-dim);}
+  .wo-actions .del-btn{color:var(--red);}
+
+  .empty{color:var(--faint); font-size:12px; text-align:center; padding:24px 0;}
+
+  nav.tabs{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:1px solid var(--border); display:flex; z-index:30;}
+  nav.tabs button{flex:1; background:none; border:none; color:var(--faint); padding:10px 2px 8px; font-size:9px; letter-spacing:0.03em; display:flex; flex-direction:column; align-items:center; gap:3px;}
+  nav.tabs button .ic{font-size:16px;}
+  nav.tabs button.active{color:var(--green);}
+
+  .osint-note{font-size:11px; color:var(--dim); background:var(--panel2); border-left:2px solid var(--amber); padding:8px 10px; border-radius:0 6px 6px 0; margin-bottom:10px;}
+  .cat{margin-bottom:10px;}
+  .cat-head{display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--panel2); border-radius:8px 8px 0 0; cursor:pointer;}
+  .cat-head span.title{font-size:10px; color:var(--green); letter-spacing:0.08em;}
+  .cat-head span.count{font-size:9px; color:var(--faint);}
+  .cat-body{border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; padding:6px;}
+  .cat-body.collapsed{display:none;}
+  .tool-item{display:flex; justify-content:space-between; align-items:center; padding:7px 6px; font-size:11px;}
+  .tool-item a{color:var(--faint); border:1px solid var(--border); border-radius:5px; padding:4px 8px; font-size:9px; text-decoration:none;}
+  .launchall{width:100%; margin-top:6px;}
+
+  .earn-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:12px; color:var(--dim);}
+  .earn-row b{color:var(--green);}
+  .earn-row:last-child{border-bottom:none;}
+
+  .tk-item{display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--panel); border:1px solid var(--border); border-radius:8px; margin-bottom:8px;}
+  .tk-item .name{font-size:13px;}
+  .tk-item .desc{font-size:10px; color:var(--faint); margin-top:2px;}
+  .tk-item a{font-size:10px; color:var(--green); border:1px solid var(--green-dim); border-radius:6px; padding:6px 10px; text-decoration:none; white-space:nowrap;}
+
+  ::-webkit-scrollbar{width:0px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <h1>FIRP <span>PRO</span></h1>
+      <div class="zone">ZONE Z841</div>
+    </div>
+    <div class="topstats">
+      <div class="stat earned"><div class="lbl">EARNED</div><div class="val" id="statEarned">$0</div></div>
+      <div class="stat pending"><div class="lbl">PENDING</div><div class="val" id="statPending">$0</div></div>
+      <div class="stat done"><div class="lbl">DONE</div><div class="val" id="statDone">0/0</div></div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="tabpanel active" id="tab-dashboard">
+      <h2 class="sec">// ADD WORK ORDER</h2>
+      <div class="card">
+        <div class="field">
+          <label>ADDRESS</label>
+          <input id="woAddr" placeholder="1234 W 4700 S, Taylorsville UT" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>CARRIER</label>
+            <select id="woCarrier">
+              <option>Safeguard</option>
+              <option>Allstate</option>
+              <option>Farmers</option>
+              <option>MCS</option>
+              <option>Cyprexx</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>PRIORITY</label>
+            <select id="woPriority">
+              <option value="high">High</option>
+              <option value="med" selected>Med</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>WO NUMBER</label>
+            <input id="woNum" placeholder="ALL-2024-0091" />
+          </div>
+          <div class="field">
+            <label>PAY ($)</label>
+            <input id="woPay" type="number" inputmode="decimal" placeholder="14.50" />
+          </div>
+        </div>
+        <button class="btn" onclick="addWO()">+ ADD WORK ORDER</button>
+      </div>
+
+      <h2 class="sec">// TODAY'S QUEUE</h2>
+      <div id="woList"></div>
+    </section>
+
+    <section class="tabpanel" id="tab-route">
+      <h2 class="sec">// ROUTE OPTIMIZER</h2>
+      <div class="card">
+        <p style="font-size:11px; color:var(--dim); margin-bottom:10px;">
+          Opens every open WO address as one multi-stop route in Google Maps. Google handles the turn-by-turn — you handle the driving.
+        </p>
+        <button class="btn" onclick="openFullRoute()">🗺 OPEN FULL ROUTE IN MAPS</button>
+      </div>
+      <h2 class="sec">// STOPS IN ORDER</h2>
+      <div id="routeList"></div>
+      <div class="osint-note">Real one-tap auto-optimization (best order by drive time) needs Google's paid Routes API. This opens your stops in the order they're listed — drag isn't built yet, so add high-priority jobs first.</div>
+    </section>
+
+    <section class="tabpanel" id="tab-osint">
+      <h2 class="sec">// PROPERTY & OCCUPANCY TRACER</h2>
+      <div class="osint-note">Built for verifying property status, ownership, and occupancy before a knock. Public-record sources only. Use for the property/job on your WO — not for looking into people outside your work.</div>
+      <div class="card">
+        <div class="field"><label>NAME OR OWNER</label><input id="osFull" placeholder="Full name on file"/></div>
+        <div class="row2">
+          <div class="field"><label>CITY</label><input id="osCity" placeholder="Taylorsville"/></div>
+          <div class="field"><label>STATE</label><input id="osState" placeholder="UT"/></div>
+        </div>
+        <div class="field"><label>ADDRESS (for property lookups)</label><input id="osAddr" placeholder="1234 W 4700 S"/></div>
+      </div>
+      <div id="osintCats"></div>
+    </section>
+
+    <section class="tabpanel" id="tab-earnings">
+      <h2 class="sec">// EARNINGS BREAKDOWN</h2>
+      <div class="card" id="earnBreakdown"></div>
+      <button class="btn blue" onclick="exportCSV()">⬇ EXPORT CSV</button>
+      <h2 class="sec" style="margin-top:16px;">// RESET</h2>
+      <div class="card">
+        <button class="btn ghost" onclick="resetShift()">CLEAR ALL WORK ORDERS</button>
+      </div>
+    </section>
+
+    <section class="tabpanel" id="tab-toolkit">
+      <h2 class="sec">// SAINT BEV TOOLKIT</h2>
+      <div class="tk-item"><div><div class="name">FIRP Landing</div><div class="desc">Beta signup page</div></div><a href="https://saintbev2-sys.github.io/firp" target="_blank">OPEN</a></div>
+      <div class="tk-item"><div><div class="name">Dispatch Tracker</div><div class="desc">Gig order accept/decline</div></div><a href="https://saintbev2-sys.github.io/utah-treasure/dispatch.html" target="_blank">OPEN</a></div>
+      <div class="tk-item"><div><div class="name">KMT Hieroglyph Reader</div><div class="desc">AI hieroglyph decoder</div></div><a href="https://saintbev2-sys.github.io/hieroglyph-reader" target="_blank">OPEN</a></div>
+      <div class="tk-item"><div><div class="name">Convert Man</div><div class="desc">File/unit converter</div></div><a href="https://saintbev2-sys.github.io/Convert-man/" target="_blank">OPEN</a></div>
+      <div class="tk-item"><div><div class="name">Read Aloud</div><div class="desc">Accessibility reader</div></div><a href="https://saintbev2-sys.github.io/read-aloud/" target="_blank">OPEN</a></div>
+      <div class="tk-item"><div><div class="name">Mamba's Ascent</div><div class="desc">Platformer game</div></div><a href="https://saintbev2-sys.github.io/mamba-ascent/" target="_blank">OPEN</a></div>
+      <div class="tk-item"><div><div class="name">Creator Universe</div><div class="desc">Full project hub</div></div><a href="https://saintbev2-sys.github.io" target="_blank">OPEN</a></div>
+    </section>
+
+  </main>
+
+  <nav class="tabs">
+    <button class="active" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="ic">📋</span>DASH</button>
+    <button data-tab="route" onclick="switchTab('route')"><span class="ic">🗺</span>ROUTE</button>
+    <button data-tab="osint" onclick="switchTab('osint')"><span class="ic">🔍</span>TRACE</button>
+    <button data-tab="earnings" onclick="switchTab('earnings')"><span class="ic">💰</span>EARN</button>
+    <button data-tab="toolkit" onclick="switchTab('toolkit')"><span class="ic">🧰</span>TOOLS</button>
+  </nav>
+
+</div>
+
+<script>
+const KEY = 'firp_pro_state_v1';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || { wos: [] }; }catch(e){ return { wos: [] }; } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+let state = load();
+
+function switchTab(name){
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelector(`nav.tabs button[data-tab="${name}"]`).classList.add('active');
+  if(name==='route') renderRoute();
+  if(name==='earnings') renderEarnings();
+}
+
+function addWO(){
+  const addr = document.getElementById('woAddr').value.trim();
+  const carrier = document.getElementById('woCarrier').value;
+  const priority = document.getElementById('woPriority').value;
+  const num = document.getElementById('woNum').value.trim();
+  const pay = parseFloat(document.getElementById('woPay').value) || 0;
+  if(!addr){ alert('Enter an address.'); return; }
+  state.wos.push({ id: Date.now(), addr, carrier, priority, num, pay, done:false });
+  save();
+  ['woAddr','woNum','woPay'].forEach(id=>document.getElementById(id).value='');
+  renderAll();
+}
+
+function toggleDone(id){
+  const w = state.wos.find(w=>w.id===id);
+  if(w) w.done = !w.done;
+  save(); renderAll();
+}
+
+function deleteWO(id){
+  state.wos = state.wos.filter(w=>w.id!==id);
+  save(); renderAll();
+}
+
+function renderWOList(){
+  const list = document.getElementById('woList');
+  if(state.wos.length===0){ list.innerHTML = '<div class="empty">No work orders yet. Add one above.</div>'; return; }
+  list.innerHTML = state.wos.map(w=>`
+    <div class="wo ${w.priority} ${w.done?'done':''}">
+      <div class="wo-top">
+        <span class="tag">${w.carrier}</span>
+        <span class="prio ${w.priority}"><span class="dot"></span>${w.priority.toUpperCase()}</span>
+      </div>
+      <div class="wo-addr">${w.addr}</div>
+      <div class="wo-meta">${w.num || 'no WO#'}</div>
+      <div class="wo-pay">$${w.pay.toFixed(2)}</div>
+      <div class="wo-actions">
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(w.addr)}" target="_blank">🗺 MAP</a>
+        <button class="done-btn" onclick="toggleDone(${w.id})">${w.done?'↺ UNDO':'✓ DONE'}</button>
+        <button class="del-btn" onclick="deleteWO(${w.id})">✕ DEL</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTopStats(){
+  const earned = state.wos.filter(w=>w.done).reduce((s,w)=>s+w.pay,0);
+  const pending = state.wos.filter(w=>!w.done).reduce((s,w)=>s+w.pay,0);
+  const doneCt = state.wos.filter(w=>w.done).length;
+  document.getElementById('statEarned').textContent = '$'+earned.toFixed(0);
+  document.getElementById('statPending').textContent = '$'+pending.toFixed(0);
+  document.getElementById('statDone').textContent = doneCt+'/'+state.wos.length;
+}
+
+function renderRoute(){
+  const open = state.wos.filter(w=>!w.done);
+  const list = document.getElementById('routeList');
+  if(open.length===0){ list.innerHTML = '<div class="empty">No open stops.</div>'; return; }
+  list.innerHTML = open.map((w,i)=>`
+    <div class="wo ${w.priority}">
+      <div class="wo-top"><span class="tag">${w.carrier}</span><span class="prio ${w.priority}"><span class="dot"></span>#${i+1}</span></div>
+      <div class="wo-addr">${w.addr}</div>
+      <div class="wo-pay">$${w.pay.toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+function openFullRoute(){
+  const open = state.wos.filter(w=>!w.done);
+  if(open.length===0){ alert('No open work orders to route.'); return; }
+  if(open.length===1){
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(open[0].addr)}`, '_blank');
+    return;
+  }
+  const destination = encodeURIComponent(open[open.length-1].addr);
+  const origin = encodeURIComponent(open[0].addr);
+  const waypoints = open.slice(1,-1).map(w=>encodeURIComponent(w.addr)).join('|');
+  let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+  if(waypoints) url += `&waypoints=${waypoints}`;
+  window.open(url, '_blank');
+}
+
+const osintTools = {
+  property: {
+    label: 'PROPERTY & OWNER RECORDS', color:'green',
+    items:[
+      { name:'County Assessor (SL County)', url:'https://slco.org/assessor/' },
+      { name:'Utah Property Records', url:'https://www.utahcounty.gov/LandRecords/Search.asp' },
+      { name:'BlackBookOnline Public Records', url:'https://www.blackbookonline.info/USA-Public-Records.aspx' },
+      { name:'Zillow (owner/listing history)', url:'https://www.zillow.com/homes/{addr}_rb/' },
+      { name:'NeighborWho', url:'https://www.neighborwho.com/address/{addr}' },
+    ]
+  },
+  people: {
+    label:'OWNER / OCCUPANT LOOKUP', color:'blue',
+    items:[
+      { name:'TruePeopleSearch', url:'https://www.truepeoplesearch.com/results?name={name}&citystatezip={city}%20{state}' },
+      { name:'FastPeopleSearch', url:'https://www.fastpeoplesearch.com/name/{name}' },
+      { name:'WhitePages', url:'https://www.whitepages.com/name/{name_u}' },
+    ]
+  },
+  courts: {
+    label:'COURT / FORECLOSURE RECORDS', color:'',
+    items:[
+      { name:'Utah State Courts (Xchange)', url:'https://www.utcourts.gov/xchange/' },
+      { name:'CourtListener', url:'https://www.courtlistener.com/?q=%22{name}%22&type=p' },
+      { name:'JudyRecords', url:'https://www.judyrecords.com/search#v=1&query={name}' },
+    ]
+  },
+  occupancy: {
+    label:'VACANCY / OCCUPANCY SIGNALS', color:'red',
+    items:[
+      { name:'USPS Vacancy Check', url:'https://tools.usps.com/find-location.htm' },
+      { name:'Utility Connect Lookup', url:'https://www.google.com/search?q={addr}+utility+service+status' },
+      { name:'Google Street View (visual check)', url:'https://www.google.com/maps/place/{addr}' },
+    ]
+  }
+};
+
+function getOSInputs(){
+  const full = document.getElementById('osFull').value.trim();
+  const city = document.getElementById('osCity').value.trim();
+  const state_ = document.getElementById('osState').value.trim();
+  const addr = document.getElementById('osAddr').value.trim();
+  const parts = full.split(' ');
+  return { full, city, state_, addr, first: parts[0]||'', last: parts.slice(1).join(' ')||'' };
+}
+
+function buildOSUrl(template, i){
+  return template
+    .replace('{name}', encodeURIComponent(i.full))
+    .replace('{name_u}', i.full.toLowerCase().replace(/\s+/g,'-'))
+    .replace('{city}', encodeURIComponent(i.city))
+    .replace('{state}', encodeURIComponent(i.state_))
+    .replace('{addr}', encodeURIComponent(i.addr));
+}
+
+function osLaunch(url){
+  const i = getOSInputs();
+  if(!i.full && !i.addr){ alert('Enter a name or address first.'); return; }
+  window.open(buildOSUrl(url, i), '_blank');
+}
+
+function osLaunchCategory(key){
+  const i = getOSInputs();
+  if(!i.full && !i.addr){ alert('Enter a name or address first.'); return; }
+  osintTools[key].items.forEach((t,idx)=>{
+    setTimeout(()=>window.open(buildOSUrl(t.url, i), '_blank'), idx*300);
+  });
+}
+
+function toggleCat(key){
+  document.getElementById('catbody-'+key).classList.toggle('collapsed');
+}
+
+function renderOsint(){
+  const c = document.getElementById('osintCats');
+  c.innerHTML = Object.entries(osintTools).map(([key,cat])=>`
+    <div class="cat">
+      <div class="cat-head" onclick="toggleCat('${key}')">
+        <span class="title">${cat.label}</span>
+        <span class="count">${cat.items.length} SOURCES</span>
+      </div>
+      <div class="cat-body" id="catbody-${key}">
+        ${cat.items.map(t=>`
+          <div class="tool-item">
+            <span>${t.name}</span>
+            <a href="javascript:void(0)" onclick="osLaunch('${t.url}')">OPEN →</a>
+          </div>
+        `).join('')}
+        <button class="btn small launchall" onclick="osLaunchCategory('${key}')">⚡ LAUNCH ALL ${cat.label}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderEarnings(){
+  const byCarrier = {};
+  state.wos.filter(w=>w.done).forEach(w=>{
+    byCarrier[w.carrier] = (byCarrier[w.carrier]||0) + w.pay;
+  });
+  const el = document.getElementById('earnBreakdown');
+  const rows = Object.entries(byCarrier);
+  if(rows.length===0){ el.innerHTML = '<div class="empty">No completed jobs yet.</div>'; return; }
+  el.innerHTML = rows.map(([c,amt])=>`<div class="earn-row"><span>${c}</span><b>$${amt.toFixed(2)}</b></div>`).join('');
+}
+
+function exportCSV(){
+  if(state.wos.length===0){ alert('Nothing to export yet.'); return; }
+  let csv = 'Address,Carrier,Priority,WO Number,Pay,Status\n';
+  state.wos.forEach(w=>{
+    csv += `"${w.addr}","${w.carrier}","${w.priority}","${w.num}",${w.pay.toFixed(2)},"${w.done?'Done':'Pending'}"\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'firp_earnings_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetShift(){
+  if(confirm('Clear ALL work orders? This cannot be undone.')){
+    state.wos = [];
+    save(); renderAll();
+  }
+}
+
+function renderAll(){
+  renderWOList();
+  renderTopStats();
+}
+renderOsint();
+renderAll();
+</script>
+
+</body>
+</html>
