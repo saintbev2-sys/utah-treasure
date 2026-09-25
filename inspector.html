@@ -208,20 +208,20 @@ const TEMPLATES = {
       key: 'intro',
       title: '📋 Standard Intro',
       desc: 'First contact - heads up I am coming',
-      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`
     },
     {
       key: 'busy',
       title: '⏰ Been Busy / Coming This Week',
       desc: 'You called, no answer - just letting them know',
-      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services. I tried to reach you about the exterior survey at ${j.address} (claim #${j.claimNumber}). My week has been busy but I will be stopping by sometime this week to complete it. This is EXTERIOR ONLY — you do not need to be home. Thanks for your patience!`
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services. I tried to reach you about the exterior survey at ${j.address}. My week has been busy but I will be stopping by sometime this week to complete it. This is EXTERIOR ONLY — you do not need to be home. Thanks for your patience!`
     },
     {
       key: 'lasttry',
       title: '⚠️ LAST TRY - Before Refused',
       desc: 'Final attempt warning - cannot reach / no access',
       warn: true,
-      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services regarding claim #${j.claimNumber} at ${j.address}. I have made multiple attempts to reach you and complete the exterior survey without success. This is my final attempt before I have to report the inspection as REFUSED, which may affect your claim. Please reply or call me back today so I can complete this. Thank you.`
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services regarding the exterior survey at ${j.address}. I have made multiple attempts to reach you and complete the survey without success. This is my final attempt before I have to report the inspection as REFUSED, which may affect your claim. Please reply or call me back today so I can complete this. Thank you.`
     }
   ],
   Farmers: [
@@ -229,20 +229,20 @@ const TEMPLATES = {
       key: 'intro',
       title: '📋 Standard Intro',
       desc: 'First contact - heads up I am coming',
-      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address} for claim #${j.claimNumber}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`
     },
     {
       key: 'busy',
       title: '⏰ Been Busy / Coming This Week',
       desc: 'You called, no answer - just letting them know',
-      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services. I tried to reach you about the exterior survey at ${j.address} (claim #${j.claimNumber}). It has been a busy week on my end but I will be stopping by sometime this week to take care of it. EXTERIOR ONLY — no need to be home. Thanks for your patience!`
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services. I tried to reach you about the exterior survey at ${j.address}. It has been a busy week on my end but I will be stopping by sometime this week to take care of it. EXTERIOR ONLY — no need to be home. Thanks for your patience!`
     },
     {
       key: 'lasttry',
       title: '⚠️ LAST TRY - Before Refused',
       desc: 'Final attempt warning - cannot reach / no access',
       warn: true,
-      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services regarding claim #${j.claimNumber} at ${j.address}. I have tried multiple times to reach you and complete the exterior survey without success. This is my final attempt before I must report the inspection as REFUSED, which may impact your claim. Please reply or call me back today. Thank you.`
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services regarding the exterior survey at ${j.address}. I have tried multiple times to reach you and complete it without success. This is my final attempt before I must report the inspection as REFUSED, which may impact your claim. Please reply or call me back today. Thank you.`
     }
   ]
 };
@@ -292,7 +292,10 @@ let state = {
   userLng: null,
   // Contact log: { jobId: { calls: [{time, type}], texts: [{time, type}], coords: {lat, lng}, travelMin: number } }
   contactLog: saved.contactLog || {},
-  form: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' }
+  form: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' },
+  addMode: 'single',
+  bulkClient: 'Allstate',
+  bulkResult: null
 };
 
 function isFI(client) { return client === 'FI-NC' || client === 'FI-DH'; }
@@ -832,7 +835,13 @@ function renderText() {
 function renderAdd() {
   const f = state.form;
   const isAddFI = isFI(f.client);
+  const mode = state.addMode || 'single';
+  if (mode === 'bulk') return renderBulkAdd();
   return `
+    <div class="toggle-group" style="margin-bottom:14px;">
+      <button class="toggle-btn" onclick="setAddMode('single')">ONE AT A TIME</button>
+      <button class="toggle-btn active-fi" onclick="setAddMode('bulk')">PASTE A LIST</button>
+    </div>
     <div class="form-card">
       <div style="font-size:12px;letter-spacing:3px;color:var(--green);margin-bottom:18px;font-family:'Rajdhani',sans-serif;font-weight:bold;">NEW INSPECTION ORDER</div>
 
@@ -860,7 +869,7 @@ function renderAdd() {
         <input id="form_contactPhone" class="form-input" placeholder="8015550100" value="${f.contactPhone}" type="tel"/>
       `}
 
-      <div class="form-label">CLAIM NUMBER</div>
+      <div class="form-label">WO / CLAIM NUMBER</div>
       <input id="form_claimNumber" class="form-input" placeholder="${isAddFI?'FI-2024-0100':'e.g. ALL-2024-0200'}" value="${f.claimNumber}"/>
 
       <div class="form-label">PRIORITY</div>
@@ -875,6 +884,45 @@ function renderAdd() {
       </div>
 
       <button class="add-btn" onclick="addJob()">+ ADD INSPECTION</button>
+    </div>`;
+}
+
+function renderBulkAdd() {
+  const c = state.bulkClient;
+  const fi = isFI(c);
+  const format = fi ? 'Address | WO Number' : 'Address | Contact Name | Phone | WO Number';
+  const example = fi
+    ? '574 E Driggs Ave, Salt Lake City, UT 84106 | 356132364'
+    : '574 E Driggs Ave, Salt Lake City, UT 84106 | Mitchell Bandley | 3852199450 | 356132364';
+  return `
+    <div class="toggle-group" style="margin-bottom:14px;">
+      <button class="toggle-btn active-fi" onclick="setAddMode('single')">ONE AT A TIME</button>
+      <button class="toggle-btn" onclick="setAddMode('bulk')">PASTE A LIST</button>
+    </div>
+    <div class="form-card">
+      <div style="font-size:12px;letter-spacing:3px;color:#00ff88;margin-bottom:18px;font-family:'Rajdhani',sans-serif;font-weight:bold;">PASTE MULTIPLE JOBS</div>
+
+      <div class="form-label">CARRIER — pick the type these lines are</div>
+      <div class="toggle-group" style="margin-bottom:4px;">
+        <button class="toggle-btn ${c==='Allstate'?'active-allstate':''}" onclick="setBulkClient('Allstate')">Allstate</button>
+        <button class="toggle-btn ${c==='Farmers'?'active-farmers':''}" onclick="setBulkClient('Farmers')">Farmers</button>
+      </div>
+      <div class="toggle-group" style="margin-bottom:12px;">
+        <button class="toggle-btn ${c==='FI-NC'?'active-fi':''}" onclick="setBulkClient('FI-NC')">FI — No Contact</button>
+        <button class="toggle-btn ${c==='FI-DH'?'active-fi':''}" style="${c==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f22;':''}" onclick="setBulkClient('FI-DH')">FI — Door Hanger</button>
+      </div>
+
+      <div style="background:#0d1f27;border:1px solid #2e5468;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:10px;letter-spacing:1px;color:#b8d4e0;margin-bottom:6px;">ONE JOB PER LINE. PUT A | BETWEEN EACH PART.</div>
+        <div style="font-size:11px;color:#ffffff;font-family:'Share Tech Mono',monospace;word-break:break-word;">${format}</div>
+        <div style="font-size:10px;color:#b8d4e0;margin-top:6px;font-family:'Share Tech Mono',monospace;word-break:break-word;">${example}</div>
+      </div>
+
+      <textarea id="bulk_text" class="form-input" rows="8" style="width:100%;resize:vertical;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.6;color:#ffffff;"></textarea>
+
+      ${state.bulkResult ? `<div style="margin-bottom:10px;font-size:13px;color:#00ff88;font-weight:bold;">${state.bulkResult}</div>` : ''}
+
+      <button class="add-btn" onclick="importBulk()">+ IMPORT THESE JOBS</button>
     </div>`;
 }
 
@@ -1094,6 +1142,42 @@ function setPriority(val) {
   render();
 }
 
+function setAddMode(m) { state.addMode = m; state.bulkResult = null; render(); }
+function setBulkClient(c) { state.bulkClient = c; render(); }
+function importBulk() {
+  const ta = document.getElementById('bulk_text');
+  if (!ta) return;
+  const lines = ta.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const client = state.bulkClient;
+  const fi = isFI(client);
+  let added = 0;
+  const newJobs = [];
+  lines.forEach((line, i) => {
+    const parts = line.split('|').map(p=>p.trim());
+    const address = parts[0] || '';
+    if (!address) return;
+    let contactName = '', contactPhone = '', claimNumber = '';
+    if (fi) {
+      claimNumber = parts[1] || '';
+    } else {
+      contactName = parts[1] || '';
+      contactPhone = parts[2] || '';
+      claimNumber = parts[3] || '';
+    }
+    newJobs.push({
+      id: Date.now() + i,
+      address, client, contactName, contactPhone,
+      claimNumber: claimNumber || (client + '-' + (Date.now()+i)),
+      priority: 'medium'
+    });
+    added++;
+  });
+  state.jobs = [...state.jobs, ...newJobs];
+  state.bulkResult = added > 0 ? ('Added ' + added + ' job' + (added===1?'':'s') + '.') : 'No lines found. Check your paste.';
+  ta.value = '';
+  saveData();
+  render();
+}
 function addJob() {
   syncFormFromDOM();
   const f = state.form;
