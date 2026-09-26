@@ -1038,10 +1038,63 @@ function renderStats(earned, pendingPay, totalPay) {
         <div class="progress-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--green),#86efac);"></div>
       </div>
       <div style="text-align:right;margin-top:6px;color:#86efac;font-size:12px;">${pct}% complete</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">BACKUP</div>
+      <div style="font-size:11px;color:#b8d4e0;margin-bottom:12px;line-height:1.5;">Your jobs only live on this phone. Save a backup so you never lose them.</div>
+      <button class="add-btn" style="margin-bottom:10px;" onclick="exportBackup()">💾 SAVE BACKUP</button>
+      <button class="add-btn" style="background:#1a3340;border:1px solid #5dd4ff;color:#5dd4ff;box-shadow:none;" onclick="document.getElementById('restoreFileInput').click()">📂 RESTORE FROM BACKUP</button>
+      <input type="file" id="restoreFileInput" accept="application/json" style="display:none;" onchange="handleRestoreFile(event)"/>
     </div>`;
 }
 
 // Actions
+function exportBackup() {
+  const backup = {
+    jobs: state.jobs,
+    done: state.done,
+    name: state.name,
+    contactLog: state.contactLog,
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = 'firp-backup-' + dateStr + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function handleRestoreFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.jobs || !Array.isArray(data.jobs)) {
+        alert('That file does not look like a FIRP backup.');
+        return;
+      }
+      if (!confirm('This will replace what is on your phone now with this backup (' + data.jobs.length + ' jobs). Continue?')) return;
+      state.jobs = data.jobs || [];
+      state.done = data.done || [];
+      state.name = data.name || state.name;
+      state.contactLog = data.contactLog || {};
+      saveData();
+      render();
+      alert('Restored ' + state.jobs.length + ' jobs.');
+    } catch (err) {
+      alert('Could not read that file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
 function saveName() {
   const inp = document.getElementById('nameInput');
   if (inp) setState({ name: inp.value || 'Your Name', editName: false });
