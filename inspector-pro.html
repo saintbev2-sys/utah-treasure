@@ -1,455 +1,1507 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>FIRP Pro — Saint Bev</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="google-site-verification" content="L5qu2WzHY68bb5uiacN6qVqQpDvFK3Q6dVV1p28njT8" />
+
+  <title>FIRP - Field Inspector Route Pro</title>
+<meta name="description" content="FIRP - route optimization for property inspection vendors">
 <style>
-  :root{
-    --bg:#0a0f1a; --panel:#111a29; --panel2:#162238; --border:#1f3050;
-    --green:#4ade80; --green-dim:#1c3a28; --amber:#fbbf24; --red:#ef4444;
-    --blue:#60a5fa; --purple:#c084fc; --text:#e6edf3; --dim:#8b9bb4; --faint:#506680;
-  }
-  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; overscroll-behavior:none;}
-  input,select,button,textarea{font-family:'JetBrains Mono',monospace;}
-  .app{max-width:520px; margin:0 auto; padding-bottom:90px; min-height:100vh;}
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
 
-  header{padding:16px 14px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:20;}
-  .brand{display:flex; justify-content:space-between; align-items:center;}
-  .brand h1{font-size:16px; letter-spacing:0.05em; color:var(--text);}
-  .brand h1 span{color:var(--green);}
-  .zone{font-size:10px; color:var(--faint); letter-spacing:0.1em;}
+:root {
+–bg: #121e25;
+–surface: #1a3340;
+–surface2: #20404f;
+–green: #00ff88;
+–green-dim: #00ff8830;
+–blue: #5dd4ff;
+–blue-dim: #5dd4ff30;
+–orange: #ffb733;
+–orange-dim: #ffb73330;
+–purple: #ee5fff;
+–purple-dim: #ee5fff30;
+–red: #ff6b6b;
+–red-dim: #ff6b6b30;
+–yellow: #ffd54f;
+–yellow-dim: #ffd54f30;
+–text: #ffffff;
+–muted: #b8d4e0;
+–border: #2e5468;
+}
 
-  .topstats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:12px;}
-  .stat{border:1px solid var(--border); border-radius:8px; padding:8px 6px; text-align:center; background:var(--panel);}
-  .stat .lbl{font-size:8px; color:var(--faint); letter-spacing:0.1em;}
-  .stat .val{font-size:15px; font-weight:800; margin-top:3px;}
-  .stat.earned .val{color:var(--green);}
-  .stat.pending .val{color:var(--blue);}
-  .stat.done .val{color:var(--amber);}
+- { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:var(–bg); font-family:‘Share Tech Mono’,monospace; color:var(–text); min-height:100vh; }
+  button, input, select, textarea { font-family:‘Share Tech Mono’,monospace; }
+  ::-webkit-scrollbar { width:3px; }
+  ::-webkit-scrollbar-thumb { background:var(–green-dim); border-radius:2px; }
 
-  main{padding:14px;}
-  .tabpanel{display:none;}
-  .tabpanel.active{display:block; animation:fade .2s ease;}
-  @keyframes fade{from{opacity:0} to{opacity:1}}
+/* HEADER */
+.header { background: linear-gradient(135deg, #1a2e22 0%, #1a2a3e 100%); border-bottom: 1px solid var(–green); padding: 16px 16px 12px; position: sticky; top:0; z-index:100; box-shadow: 0 4px 20px rgba(0,230,118,0.15); }
+.header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+.header-label { font-size:9px; letter-spacing:4px; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
+.header-title { font-size:22px; font-weight:700; font-family:‘Rajdhani’,sans-serif; letter-spacing:2px; }
+.header-right { text-align:right; }
+.survey-count { font-size:28px; font-weight:700; color:var(–green); font-family:‘Rajdhani’,sans-serif; line-height:1; }
+.survey-rate { font-size:10px; color:var(–green); opacity:0.7; }
+.name-row { display:flex; align-items:center; gap:6px; margin-top:2px; }
+.name-display { font-size:11px; color:#86efac; cursor:pointer; }
+.name-input { background:rgba(255,255,255,0.1); border:1px solid var(–border); border-radius:4px; color:var(–text); font-size:11px; padding:3px 8px; width:160px; outline:none; }
 
-  h2.sec{font-size:13px; color:var(--green); letter-spacing:0.1em; margin-bottom:10px;}
-  .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px;}
+.stats-row { display:flex; gap:8px; }
+.stat-box { flex:1; background:rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px; }
+.stat-label { font-size:9px; letter-spacing:2px; margin-bottom:3px; font-weight:700; }
+.stat-value { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
 
-  .field{margin-bottom:10px;}
-  .field label{display:block; font-size:10px; color:var(--dim); letter-spacing:0.05em; margin-bottom:5px;}
-  .field input, .field select{width:100%; background:#0d1622; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:10px 12px; font-size:14px; outline:none;}
-  .field input:focus, .field select:focus{border-color:var(--green);}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+/* TABS */
+.tabs { display:flex; background:#1a2a35; border-bottom:2px solid var(–border); overflow-x:auto; }
+.tab { flex:1; min-width:60px; padding:11px 4px; background:none; border:none; border-bottom:3px solid transparent; color:#a0c0d0; font-size:10px; letter-spacing:1px; font-weight:bold; cursor:pointer; transition:all 0.2s; font-family:‘Rajdhani’,sans-serif; white-space:nowrap; }
+.tab.active { border-bottom-color:var(–green); color:var(–green); }
 
-  .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--green); color:#0a0f1a; border:none; border-radius:8px; padding:12px 16px; font-weight:700; font-size:12px; letter-spacing:0.05em; cursor:pointer; width:100%;}
-  .btn.ghost{background:transparent; border:1px solid var(--border); color:var(--text);}
-  .btn.blue{background:var(--blue);}
-  .btn.small{padding:8px 10px; font-size:11px; width:auto;}
-  .btnrow{display:flex; gap:8px; flex-wrap:wrap;}
+/* CONTENT */
+.content { padding:14px; max-width:600px; margin:0 auto; }
 
-  .wo{border-left:3px solid var(--blue); background:var(--panel); border:1px solid var(--border); border-left-width:3px; border-radius:8px; padding:10px; margin-bottom:8px;}
-  .wo.high{border-left-color:var(--red);}
-  .wo.med{border-left-color:var(--amber);}
-  .wo.low{border-left-color:var(--green);}
-  .wo.done{opacity:0.45;}
-  .wo-top{display:flex; justify-content:space-between; align-items:center;}
-  .tag{font-size:9px; padding:3px 7px; border:1px solid var(--blue); color:var(--blue); border-radius:5px;}
-  .prio{font-size:9px; display:flex; align-items:center; gap:4px;}
-  .prio .dot{width:5px; height:5px; border-radius:50%; background:var(--red);}
-  .prio.med .dot{background:var(--amber);}
-  .prio.low .dot{background:var(--green);}
-  .wo-addr{font-size:13px; font-weight:700; margin-top:6px;}
-  .wo-meta{font-size:10px; color:var(--dim); margin-top:4px;}
-  .wo-pay{font-size:14px; font-weight:800; color:var(--green); margin-top:6px;}
-  .wo-actions{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
-  .wo-actions a, .wo-actions button{flex:1; text-align:center; font-size:10px; padding:7px 4px; border-radius:6px; border:1px solid var(--border); color:var(--text); text-decoration:none; background:#0d1622; cursor:pointer;}
-  .wo-actions .done-btn{color:var(--green); border-color:var(--green-dim);}
-  .wo-actions .del-btn{color:var(--red);}
+/* ACTION BUTTONS */
+.action-row { display:flex; gap:10px; margin-bottom:14px; }
+.action-btn { flex:1; padding:14px; border-radius:10px; border:2px solid; font-size:12px; letter-spacing:2px; font-weight:bold; cursor:pointer; font-family:‘Rajdhani’,sans-serif; transition:all 0.2s; }
+.btn-optimize { background:linear-gradient(135deg,#003d1a,#006830); border-color:var(–green); color:var(–green); }
+.btn-route { background:linear-gradient(135deg,#0a1a2e,#0d2f5c); border-color:var(–blue); color:var(–blue); }
 
-  .empty{color:var(--faint); font-size:12px; text-align:center; padding:24px 0;}
+/* JOB CARDS */
+.job-card { background:#1f3848; border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid #2e5468; position:relative; overflow:hidden; transition:opacity 0.3s; }
+.job-card.done { opacity:0.45; }
+.job-card .side-bar { position:absolute; left:0; top:0; bottom:0; width:4px; }
+.job-inner { margin-left:10px; display:flex; justify-content:space-between; gap:8px; }
+.job-info { flex:1; min-width:0; }
+.job-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px; align-items:center; }
+.badge { font-size:10px; border-radius:4px; padding:3px 8px; letter-spacing:1px; font-weight:bold; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
+.priority-dot { font-size:10px; font-weight:bold; }
+.job-address { font-size:13px; color:#ffffff; margin-bottom:3px; font-weight:600; }
+.job-meta { font-size:11px; color:#b8d4e0; margin-bottom:3px; }
+.job-type { font-size:10px; color:var(–green); margin-bottom:5px; font-weight:600; }
+.job-pay { font-size:18px; font-weight:bold; color:var(–green); font-family:‘Rajdhani’,sans-serif; }
+.job-pay.fi-pay { color:var(–purple); }
 
-  nav.tabs{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:1px solid var(--border); display:flex; z-index:30;}
-  nav.tabs button{flex:1; background:none; border:none; color:var(--faint); padding:10px 2px 8px; font-size:9px; letter-spacing:0.03em; display:flex; flex-direction:column; align-items:center; gap:3px;}
-  nav.tabs button .ic{font-size:16px;}
-  nav.tabs button.active{color:var(--green);}
+/* NEW: Travel + Call info row */
+.job-extra { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; font-size:10px; font-family:‘Rajdhani’,sans-serif; }
+.extra-chip { background:rgba(255,255,255,0.08); border:1px solid var(–border); border-radius:4px; padding:3px 7px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }
+.extra-chip.travel { color:var(–blue); border-color:#40c8ff44; }
+.extra-chip.attempts { color:var(–orange); border-color:#ffaa0044; }
+.extra-chip.last-call { color:var(–muted); }
+.extra-chip.followup-due { color:var(–red); border-color:#ff525266; background:rgba(255,82,82,0.08); animation:pulseRed 2s infinite; }
+.extra-chip.refused-warn { color:var(–red); border-color:var(–red); background:rgba(255,82,82,0.15); font-weight:bold; }
+@keyframes pulseRed { 0%,100%{opacity:1;} 50%{opacity:0.55;} }
 
-  .osint-note{font-size:11px; color:var(--dim); background:var(--panel2); border-left:2px solid var(--amber); padding:8px 10px; border-radius:0 6px 6px 0; margin-bottom:10px;}
-  .cat{margin-bottom:10px;}
-  .cat-head{display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--panel2); border-radius:8px 8px 0 0; cursor:pointer;}
-  .cat-head span.title{font-size:10px; color:var(--green); letter-spacing:0.08em;}
-  .cat-head span.count{font-size:9px; color:var(--faint);}
-  .cat-body{border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; padding:6px;}
-  .cat-body.collapsed{display:none;}
-  .tool-item{display:flex; justify-content:space-between; align-items:center; padding:7px 6px; font-size:11px;}
-  .tool-item a{color:var(--faint); border:1px solid var(--border); border-radius:5px; padding:4px 8px; font-size:9px; text-decoration:none;}
-  .launchall{width:100%; margin-top:6px;}
+.job-actions { display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
+.jbtn { border-radius:6px; padding:6px 10px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; font-weight:bold; transition:all 0.15s; background:rgba(255,255,255,0.08); white-space:nowrap; }
+.jbtn:active { transform:scale(0.95); }
 
-  .earn-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:12px; color:var(--dim);}
-  .earn-row b{color:var(--green);}
-  .earn-row:last-child{border-bottom:none;}
+/* FI BADGE */
+.fi-only-badge { background:var(–purple-dim); border:1px solid var(–purple); color:var(–purple); font-size:10px; border-radius:4px; padding:3px 8px; letter-spacing:1px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 
-  .tk-item{display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--panel); border:1px solid var(--border); border-radius:8px; margin-bottom:8px;}
-  .tk-item .name{font-size:13px;}
-  .tk-item .desc{font-size:10px; color:var(--faint); margin-top:2px;}
-  .tk-item a{font-size:10px; color:var(--green); border:1px solid var(--green-dim); border-radius:6px; padding:6px 10px; text-decoration:none; white-space:nowrap;}
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+.modal { background:#1a2e22; border:1px solid var(–green); border-radius:16px; padding:22px; max-width:380px; width:100%; max-height:90vh; overflow-y:auto; }
+.modal-label { font-size:9px; letter-spacing:3px; color:var(–green); margin-bottom:4px; font-family:‘Rajdhani’,sans-serif; }
+.modal-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
+.modal-sub { font-size:11px; margin-bottom:14px; }
+.msg-preview { background:rgba(255,255,255,0.08); border-radius:10px; padding:12px; font-size:12px; color:#d1fae5; line-height:1.7; margin-bottom:16px; border:1px solid var(–border); }
+.modal-btns { display:flex; gap:10px; }
+.modal-cancel { flex:1; padding:11px; border-radius:8px; background:var(–red-dim); border:1px solid var(–red); color:var(–red); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
+.modal-send { flex:2; padding:11px; border-radius:8px; background:linear-gradient(135deg,#003d1a,#005724); border:1px solid var(–green); color:var(–green); cursor:pointer; font-size:11px; letter-spacing:2px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
 
-  ::-webkit-scrollbar{width:0px;}
+/* TEMPLATE PICKER */
+.template-picker { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.template-option { background:rgba(255,255,255,0.06); border:1px solid var(–border); border-radius:8px; padding:10px 12px; cursor:pointer; transition:all 0.15s; text-align:left; color:var(–text); font-family:‘Share Tech Mono’,monospace; }
+.template-option.active { border-color:var(–green); background:rgba(0,255,136,0.15); box-shadow:0 0 12px rgba(0,255,136,0.2); }
+.template-option:active { transform:scale(0.98); }
+.template-title { font-size:11px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; letter-spacing:1px; margin-bottom:2px; }
+.template-desc { font-size:10px; color:var(–muted); }
+.template-option.warn .template-title { color:var(–red); }
+.template-option.warn { border-color:#ff525244; }
+.template-option.warn.active { border-color:var(–red); background:rgba(255,82,82,0.08); box-shadow:0 0 12px rgba(255,82,82,0.15); }
+
+/* FORM */
+.form-card { background:var(–surface); border:1px solid var(–green-dim); border-radius:12px; padding:20px; }
+.form-label { font-size:9px; letter-spacing:2px; color:#86efac; margin-bottom:5px; font-family:‘Rajdhani’,sans-serif; }
+.form-input { width:100%; padding:10px 12px; background:rgba(255,255,255,0.08); border:1px solid var(–border); border-radius:6px; color:var(–text); font-size:13px; outline:none; margin-bottom:12px; font-family:‘Share Tech Mono’,monospace; }
+.form-input:focus { border-color:var(–green); }
+.toggle-group { display:flex; gap:8px; margin-bottom:12px; }
+.toggle-btn { flex:1; padding:10px; border-radius:6px; border:1px solid var(–border); background:rgba(255,255,255,0.06); color:var(–muted); cursor:pointer; font-size:11px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; letter-spacing:1px; transition:all 0.2s; }
+.toggle-btn.active-allstate { background:var(–blue-dim); border-color:var(–blue); color:var(–blue); }
+.toggle-btn.active-farmers { background:var(–orange-dim); border-color:var(–orange); color:var(–orange); }
+.toggle-btn.active-fi { background:var(–purple-dim); border-color:var(–purple); color:var(–purple); }
+.toggle-btn.active-high { background:rgba(239,83,80,0.15); border-color:var(–red); color:var(–red); }
+.toggle-btn.active-medium { background:var(–orange-dim); border-color:var(–orange); color:var(–orange); }
+.toggle-btn.active-low { background:rgba(74,101,114,0.2); border-color:var(–muted); color:var(–muted); }
+.fi-notice { background:var(–purple-dim); border:1px solid var(–purple); border-radius:8px; padding:10px 12px; font-size:11px; color:var(–purple); margin-bottom:12px; line-height:1.5; }
+.add-btn { width:100%; padding:14px; border-radius:10px; background:linear-gradient(135deg,#003d1a,#005724); border:1px solid var(–green); color:var(–green); font-size:13px; letter-spacing:3px; font-weight:bold; cursor:pointer; font-family:‘Rajdhani’,sans-serif; box-shadow:0 0 16px rgba(0,230,118,0.2); }
+
+/* STATS */
+.stats-card { background:var(–surface); border:1px solid var(–green-dim); border-radius:12px; padding:20px; margin-bottom:12px; }
+.stats-title { font-size:10px; letter-spacing:3px; color:var(–green); margin-bottom:16px; font-family:‘Rajdhani’,sans-serif; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.stat-name { color:#86efac; font-size:13px; }
+.stat-sub { font-size:10px; color:var(–muted); }
+.stat-amount { font-weight:bold; font-size:18px; font-family:‘Rajdhani’,sans-serif; }
+.divider { height:1px; background:var(–border); margin:10px 0; }
+.progress-bar-bg { background:var(–border); border-radius:100px; height:7px; overflow:hidden; margin-top:5px; }
+.progress-bar-fill { height:100%; border-radius:100px; transition:width 0.5s; }
+
+/* TEXT TAB */
+.carrier-section { background:var(–surface); border-radius:12px; padding:16px; margin-bottom:12px; }
+.carrier-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.carrier-name { font-size:16px; font-weight:bold; font-family:‘Rajdhani’,sans-serif; }
+.carrier-tag { font-size:9px; border-radius:5px; padding:3px 10px; border:1px solid; font-family:‘Rajdhani’,sans-serif; }
+.text-job-row { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px; border:1px solid var(–border); margin-bottom:8px; }
+.text-job-name { font-size:12px; }
+.text-job-addr { font-size:10px; color:var(–muted); }
+.text-send-btn { border-radius:6px; padding:7px 12px; font-size:10px; border:1px solid; cursor:pointer; font-family:‘Rajdhani’,sans-serif; font-weight:bold; letter-spacing:1px; }
+.fi-section { background:var(–surface); border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid var(–purple-dim); }
+.fi-job-row { background:rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px; border:1px solid var(–purple-dim); margin-bottom:8px; }
+.fi-no-contact { font-size:10px; color:var(–purple); margin-top:3px; }
+
+.empty-msg { text-align:center; color:var(–muted); font-size:12px; padding:12px; }
+
+.section-header { font-size:10px; letter-spacing:3px; color:var(–green); margin-bottom:12px; font-family:‘Rajdhani’,sans-serif; }
+
+/* MAP TAB */
+#map-container { width:100%; height:calc(100vh - 180px); position:relative; }
+.map-status { padding:14px 16px; background:#1a2a35; border-bottom:1px solid var(–border); display:flex; align-items:center; gap:8px; font-size:11px; }
+.map-dot { width:10px; height:10px; border-radius:50%; background:var(–green); box-shadow:0 0 8px var(–green); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.6;transform:scale(1.3);} }
+.map-legend { padding:10px 16px; background:#1a2a35; border-top:1px solid var(–border); display:flex; gap:14px; flex-wrap:wrap; font-size:10px; }
+.legend-item { display:flex; align-items:center; gap:5px; }
+
+/* JOB TIMER */
+.timer-chip { background:rgba(0,255,136,0.08); border:1px solid var(–green); color:var(–green); border-radius:4px; padding:3px 7px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; font-size:10px; font-family:‘Rajdhani’,sans-serif; font-weight:bold; }
+.timer-chip.running { animation:pulseGreen 1.5s infinite; }
+.timer-chip.done { color:var(–muted); border-color:var(–border); background:rgba(0,0,0,0.4); }
+@keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.4);} 50%{box-shadow:0 0 0 6px rgba(0,255,136,0);} }
+.jbtn.timer-start { color:var(–green); border-color:#00ff8866; }
+.jbtn.timer-stop { color:var(–red); border-color:var(–red); background:rgba(255,82,82,0.15); animation:pulseRed 1.5s infinite; }
+
+/* TOAST */
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#0a2a18; border:1px solid var(–green); color:var(–green); padding:12px 20px; border-radius:8px; font-family:‘Rajdhani’,sans-serif; font-size:12px; letter-spacing:2px; z-index:9999; box-shadow:0 0 20px rgba(0,255,136,0.3); animation:toastIn 0.3s; }
+@keyframes toastIn { from{opacity:0;transform:translate(-50%,20px);} to{opacity:1;transform:translate(-50%,0);} }
 </style>
+
 </head>
 <body>
-<div class="app">
+<script>
+/* === FIRP PROFILES (login) === */
+(function(){
+  var RG=Storage.prototype.getItem, RS=Storage.prototype.setItem, RR=Storage.prototype.removeItem;
+  var SHARED=['routepro_geocache','routepro_profiles','routepro_active'];
+  function active(){ return RG.call(localStorage,'routepro_active')||'main'; }
+  function pre(id){ return id==='main' ? '' : 'p_'+id+'_'; }
+  function k(key){
+    if(typeof key!=='string'||key.indexOf('routepro_')!==0||SHARED.indexOf(key)>-1) return key;
+    return pre(active())+key;
+  }
+  Storage.prototype.getItem=function(key){ return RG.call(this,this===localStorage?k(key):key); };
+  Storage.prototype.setItem=function(key,v){ return RS.call(this,this===localStorage?k(key):key,v); };
+  Storage.prototype.removeItem=function(key){ return RR.call(this,this===localStorage?k(key):key); };
 
-  <header>
-    <div class="brand">
-      <h1>FIRP <span>PRO</span></h1>
-      <div class="zone">ZONE Z841</div>
-    </div>
-    <div class="topstats">
-      <div class="stat earned"><div class="lbl">EARNED</div><div class="val" id="statEarned">$0</div></div>
-      <div class="stat pending"><div class="lbl">PENDING</div><div class="val" id="statPending">$0</div></div>
-      <div class="stat done"><div class="lbl">DONE</div><div class="val" id="statDone">0/0</div></div>
-    </div>
-  </header>
+  function hash(s){ var h=5381; for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))|0;} return String(h); }
+  function profiles(){
+    var p=[]; try{ p=JSON.parse(RG.call(localStorage,'routepro_profiles')||'[]'); }catch(e){}
+    if(!p.some(function(x){return x.id==='main';})) p.unshift({id:'main',name:'Main',pin:''});
+    return p;
+  }
+  function saveProfiles(p){ RS.call(localStorage,'routepro_profiles',JSON.stringify(p)); }
+  function cur(){ var a=active(); return profiles().filter(function(x){return x.id===a;})[0]||profiles()[0]; }
+  function unlocked(id){ return sessionStorage.getItem('firp_unlocked')===id; }
 
-  <main>
+  var css=document.createElement('style');
+  css.textContent='#pf-chip{position:fixed;left:10px;bottom:10px;z-index:9998;background:#000;color:#fff;border:2px solid #00e676;border-radius:20px;padding:8px 14px;font:700 14px system-ui;}'+
+  '#pf-ov{position:fixed;inset:0;z-index:99999;background:#0b0f14;color:#fff;font-family:system-ui;overflow:auto;padding:24px 18px;}'+
+  '#pf-ov h2{margin:0 0 6px;font-size:26px;color:#fff}#pf-ov p{color:#cfd8dc;margin:0 0 16px;font-size:15px}'+
+  '#pf-ov button,#pf-ov input{display:block;width:100%;box-sizing:border-box;font:700 18px system-ui;padding:16px;margin:10px 0;border-radius:12px;border:2px solid #00e676;}'+
+  '#pf-ov button{background:#000;color:#fff;text-align:left}#pf-ov button.go{background:#00e676;color:#000;text-align:center}'+
+  '#pf-ov button.x{border-color:#ff5252;color:#ff8a80;font-size:14px;padding:10px;text-align:center}'+
+  '#pf-ov input{background:#fff;color:#000;border-color:#fff}#pf-err{color:#ff8a80;font-weight:700;min-height:20px}';
+  document.head.appendChild(css);
 
-    <section class="tabpanel active" id="tab-dashboard">
-      <h2 class="sec">// ADD WORK ORDER</h2>
-      <div class="card">
-        <div class="field">
-          <label>ADDRESS</label>
-          <input id="woAddr" placeholder="1234 W 4700 S, Taylorsville UT" />
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label>CARRIER</label>
-            <select id="woCarrier">
-              <option>Safeguard</option>
-              <option>Allstate</option>
-              <option>Farmers</option>
-              <option>MCS</option>
-              <option>Cyprexx</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>PRIORITY</label>
-            <select id="woPriority">
-              <option value="high">High</option>
-              <option value="med" selected>Med</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label>WO NUMBER</label>
-            <input id="woNum" placeholder="ALL-2024-0091" />
-          </div>
-          <div class="field">
-            <label>PAY ($)</label>
-            <input id="woPay" type="number" inputmode="decimal" placeholder="14.50" />
-          </div>
-        </div>
-        <button class="btn" onclick="addWO()">+ ADD WORK ORDER</button>
-      </div>
+  function el(t,txt,cls,fn){ var e=document.createElement(t); if(txt)e.textContent=txt; if(cls)e.className=cls; if(fn)e.onclick=fn; return e; }
+  function overlay(){ var o=document.getElementById('pf-ov'); if(o)o.remove(); o=el('div'); o.id='pf-ov'; document.body.appendChild(o); return o; }
+  function enter(id){ RS.call(localStorage,'routepro_active',id); sessionStorage.setItem('firp_unlocked',id); location.reload(); }
 
-      <h2 class="sec">// TODAY'S QUEUE</h2>
-      <div id="woList"></div>
-    </section>
+  function pinScreen(p,locked){
+    var o=overlay(); o.appendChild(el('h2','🔒 '+p.name)); o.appendChild(el('p','Enter your PIN.'));
+    var i=el('input'); i.type='password'; i.inputMode='numeric'; i.placeholder='PIN'; o.appendChild(i);
+    var err=el('div'); err.id='pf-err'; o.appendChild(err);
+    o.appendChild(el('button','Unlock','go',function(){
+      if(hash(i.value)===p.pin){ enter(p.id); } else { err.textContent='Wrong PIN. Try again.'; }
+    }));
+    o.appendChild(el('button','Back','',function(){ picker(locked); }));
+  }
 
-    <section class="tabpanel" id="tab-route">
-      <h2 class="sec">// ROUTE OPTIMIZER</h2>
-      <div class="card">
-        <p style="font-size:11px; color:var(--dim); margin-bottom:10px;">
-          Opens every open WO address as one multi-stop route in Google Maps. Google handles the turn-by-turn — you handle the driving.
-        </p>
-        <button class="btn" onclick="openFullRoute()">🗺 OPEN FULL ROUTE IN MAPS</button>
-      </div>
-      <h2 class="sec">// STOPS IN ORDER</h2>
-      <div id="routeList"></div>
-      <div class="osint-note">Real one-tap auto-optimization (best order by drive time) needs Google's paid Routes API. This opens your stops in the order they're listed — drag isn't built yet, so add high-priority jobs first.</div>
-    </section>
+  function newScreen(){
+    var o=overlay(); o.appendChild(el('h2','New profile')); o.appendChild(el('p','Name it. PIN is optional.'));
+    var n=el('input'); n.placeholder='Name (e.g. Bevon)'; o.appendChild(n);
+    var pn=el('input'); pn.type='password'; pn.inputMode='numeric'; pn.placeholder='PIN (optional)'; o.appendChild(pn);
+    var err=el('div'); err.id='pf-err'; o.appendChild(err);
+    o.appendChild(el('button','Create','go',function(){
+      var name=n.value.trim(); if(!name){err.textContent='Type a name first.';return;}
+      var id='u'+Date.now().toString(36); var p=profiles();
+      p.push({id:id,name:name,pin:pn.value?hash(pn.value):''}); saveProfiles(p);
+      RS.call(localStorage,pre(id)+'routepro_name',name);
+      enter(id);
+    }));
+    o.appendChild(el('button','Back','',function(){ picker(false); }));
+  }
 
-    <section class="tabpanel" id="tab-osint">
-      <h2 class="sec">// PROPERTY & OCCUPANCY TRACER</h2>
-      <div class="osint-note">Built for verifying property status, ownership, and occupancy before a knock. Public-record sources only. Use for the property/job on your WO — not for looking into people outside your work.</div>
-      <div class="card">
-        <div class="field"><label>NAME OR OWNER</label><input id="osFull" placeholder="Full name on file"/></div>
-        <div class="row2">
-          <div class="field"><label>CITY</label><input id="osCity" placeholder="Taylorsville"/></div>
-          <div class="field"><label>STATE</label><input id="osState" placeholder="UT"/></div>
-        </div>
-        <div class="field"><label>ADDRESS (for property lookups)</label><input id="osAddr" placeholder="1234 W 4700 S"/></div>
-      </div>
-      <div id="osintCats"></div>
-    </section>
 
-    <section class="tabpanel" id="tab-earnings">
-      <h2 class="sec">// EARNINGS BREAKDOWN</h2>
-      <div class="card" id="earnBreakdown"></div>
-      <button class="btn blue" onclick="exportCSV()">⬇ EXPORT CSV</button>
-      <h2 class="sec" style="margin-top:16px;">// RESET</h2>
-      <div class="card">
-        <button class="btn ghost" onclick="resetShift()">CLEAR ALL WORK ORDERS</button>
-      </div>
-    </section>
+  function exportScreen(){
+    var c=cur(), pf=pre(c.id), data={};
+    for(var i=0;i<localStorage.length;i++){
+      var key=localStorage.key(i); if(!key) continue;
+      var base=null;
+      if(pf){ if(key.indexOf(pf)===0) base=key.slice(pf.length); }
+      else if(key.indexOf('routepro_')===0 && SHARED.indexOf(key)<0 && key!=='routepro_geocache') base=key;
+      if(base && base!=='routepro_geocache') data[base]=RG.call(localStorage,key);
+    }
+    var code='FIRP1:'+btoa(unescape(encodeURIComponent(JSON.stringify({name:c.name,data:data}))));
+    var o=overlay(); o.appendChild(el('h2','Export')); o.appendChild(el('p','Copy this code. Paste it on your other phone under Import.'));
+    var t=el('textarea'); t.value=code; t.readOnly=true; t.style.cssText='width:100%;height:140px;box-sizing:border-box;font:14px monospace;background:#fff;color:#000;border-radius:12px;padding:10px;'; o.appendChild(t);
+    var msg=el('div'); msg.id='pf-err'; o.appendChild(msg);
+    o.appendChild(el('button','Copy code','go',function(){
+      t.select(); t.setSelectionRange(0,999999999);
+      var ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+      if(navigator.clipboard){ navigator.clipboard.writeText(code).then(function(){msg.textContent='Copied ✓';}).catch(function(){msg.textContent=ok?'Copied ✓':'Press and hold the box. Tap Copy.';}); }
+      else msg.textContent=ok?'Copied ✓':'Press and hold the box. Tap Copy.';
+    }));
+    o.appendChild(el('button','Back','',function(){ picker(false); }));
+  }
 
-    <section class="tabpanel" id="tab-toolkit">
-      <h2 class="sec">// SAINT BEV TOOLKIT</h2>
-      <div class="tk-item"><div><div class="name">FIRP Landing</div><div class="desc">Beta signup page</div></div><a href="https://saintbev2-sys.github.io/firp" target="_blank">OPEN</a></div>
-      <div class="tk-item"><div><div class="name">Dispatch Tracker</div><div class="desc">Gig order accept/decline</div></div><a href="https://saintbev2-sys.github.io/utah-treasure/dispatch.html" target="_blank">OPEN</a></div>
-      <div class="tk-item"><div><div class="name">KMT Hieroglyph Reader</div><div class="desc">AI hieroglyph decoder</div></div><a href="https://saintbev2-sys.github.io/hieroglyph-reader" target="_blank">OPEN</a></div>
-      <div class="tk-item"><div><div class="name">Convert Man</div><div class="desc">File/unit converter</div></div><a href="https://saintbev2-sys.github.io/Convert-man/" target="_blank">OPEN</a></div>
-      <div class="tk-item"><div><div class="name">Read Aloud</div><div class="desc">Accessibility reader</div></div><a href="https://saintbev2-sys.github.io/read-aloud/" target="_blank">OPEN</a></div>
-      <div class="tk-item"><div><div class="name">Mamba's Ascent</div><div class="desc">Platformer game</div></div><a href="https://saintbev2-sys.github.io/mamba-ascent/" target="_blank">OPEN</a></div>
-      <div class="tk-item"><div><div class="name">Creator Universe</div><div class="desc">Full project hub</div></div><a href="https://saintbev2-sys.github.io" target="_blank">OPEN</a></div>
-    </section>
+  function importScreen(){
+    var o=overlay(); o.appendChild(el('h2','Import')); o.appendChild(el('p','Paste the code from your other phone. It makes a new profile. Nothing is overwritten.'));
+    var t=el('textarea'); t.placeholder='Paste code here'; t.style.cssText='width:100%;height:140px;box-sizing:border-box;font:14px monospace;background:#fff;color:#000;border-radius:12px;padding:10px;'; o.appendChild(t);
+    var err=el('div'); err.id='pf-err'; o.appendChild(err);
+    o.appendChild(el('button','Import','go',function(){
+      try{
+        var raw=t.value.trim(); if(raw.indexOf('FIRP1:')!==0) throw 0;
+        var obj=JSON.parse(decodeURIComponent(escape(atob(raw.slice(6)))));
+        var id='u'+Date.now().toString(36), p=profiles();
+        p.push({id:id,name:(obj.name||'Imported')+' (imported)',pin:''}); saveProfiles(p);
+        Object.keys(obj.data||{}).forEach(function(key){
+          if(key.indexOf('routepro_')===0 && SHARED.indexOf(key)<0) RS.call(localStorage,pre(id)+key,obj.data[key]);
+        });
+        enter(id);
+      }catch(e){ err.textContent='That code did not work. Copy it again.'; }
+    }));
+    o.appendChild(el('button','Back','',function(){ picker(false); }));
+  }
 
-  </main>
+  function picker(locked){
+    var o=overlay(); o.appendChild(el('h2','Who is working?')); o.appendChild(el('p','Pick a profile. Each one keeps its own jobs.'));
+    profiles().forEach(function(p){
+      o.appendChild(el('button',(p.pin?'🔒 ':'👤 ')+p.name+(p.id===active()?'  ✓':''),'',function(){
+        if(p.pin && !(unlocked(p.id)&&p.id===active())) pinScreen(p,locked); else enter(p.id);
+      }));
+    });
+    o.appendChild(el('button','＋ New profile','',newScreen));
+    o.appendChild(el('button','⬆️ Export this profile','',exportScreen));
+    o.appendChild(el('button','⬇️ Import a profile','',importScreen));
+    var c=cur();
+    if(c.id!=='main') o.appendChild(el('button','Delete "'+c.name+'"','x',function(){
+      if(!confirm('Delete '+c.name+' and all its jobs?')) return;
+      var pf=pre(c.id), rm=[]; for(var i=0;i<localStorage.length;i++){ var key=RG.call(localStorage,'x')&&localStorage.key(i); if(key&&key.indexOf(pf)===0) rm.push(key); }
+      rm.forEach(function(key){ RR.call(localStorage,key); });
+      saveProfiles(profiles().filter(function(x){return x.id!==c.id;}));
+      RS.call(localStorage,'routepro_active','main'); sessionStorage.setItem('firp_unlocked','main'); location.reload();
+    }));
+    if(!locked) o.appendChild(el('button','Close','',function(){ o.remove(); }));
+  }
 
-  <nav class="tabs">
-    <button class="active" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="ic">📋</span>DASH</button>
-    <button data-tab="route" onclick="switchTab('route')"><span class="ic">🗺</span>ROUTE</button>
-    <button data-tab="osint" onclick="switchTab('osint')"><span class="ic">🔍</span>TRACE</button>
-    <button data-tab="earnings" onclick="switchTab('earnings')"><span class="ic">💰</span>EARN</button>
-    <button data-tab="toolkit" onclick="switchTab('toolkit')"><span class="ic">🧰</span>TOOLS</button>
-  </nav>
+  var c=cur();
+  var chip=el('div','👤 '+c.name); chip.id='pf-chip'; chip.onclick=function(){ picker(false); };
+  document.body.appendChild(chip);
+  if(c.pin && !unlocked(c.id)) pinScreen(c,true);
+})();
+</script>
 
-</div>
+<div id="app"></div>
 
 <script>
-const KEY = 'firp_pro_state_v1';
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || { wos: [] }; }catch(e){ return { wos: [] }; } }
-function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
-let state = load();
+const PAY = { Allstate: 14.50, Farmers: 14.50, 'FI-NC': 14.50, 'FI-DH': 14.50 };
+const CC = { Allstate: '#40c8ff', Farmers: '#ffaa00', 'FI-NC': '#e040fb', 'FI-DH': '#ffd54f' };
+const CLIENT_LABELS = { Allstate: 'Allstate', Farmers: 'Farmers', 'FI-NC': 'FI — No Contact', 'FI-DH': 'FI — Door Hanger' };
 
-function switchTab(name){
-  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  document.querySelector(`nav.tabs button[data-tab="${name}"]`).classList.add('active');
-  if(name==='route') renderRoute();
-  if(name==='earnings') renderEarnings();
-}
+// Follow-up window in hours - if call attempt not followed by text within this, flag it
+const FOLLOWUP_HOURS = 24;
 
-function addWO(){
-  const addr = document.getElementById('woAddr').value.trim();
-  const carrier = document.getElementById('woCarrier').value;
-  const priority = document.getElementById('woPriority').value;
-  const num = document.getElementById('woNum').value.trim();
-  const pay = parseFloat(document.getElementById('woPay').value) || 0;
-  if(!addr){ alert('Enter an address.'); return; }
-  state.wos.push({ id: Date.now(), addr, carrier, priority, num, pay, done:false });
-  save();
-  ['woAddr','woNum','woPay'].forEach(id=>document.getElementById(id).value='');
-  renderAll();
-}
-
-function toggleDone(id){
-  const w = state.wos.find(w=>w.id===id);
-  if(w) w.done = !w.done;
-  save(); renderAll();
-}
-
-function deleteWO(id){
-  state.wos = state.wos.filter(w=>w.id!==id);
-  save(); renderAll();
-}
-
-function renderWOList(){
-  const list = document.getElementById('woList');
-  if(state.wos.length===0){ list.innerHTML = '<div class="empty">No work orders yet. Add one above.</div>'; return; }
-  list.innerHTML = state.wos.map(w=>`
-    <div class="wo ${w.priority} ${w.done?'done':''}">
-      <div class="wo-top">
-        <span class="tag">${w.carrier}</span>
-        <span class="prio ${w.priority}"><span class="dot"></span>${w.priority.toUpperCase()}</span>
-      </div>
-      <div class="wo-addr">${w.addr}</div>
-      <div class="wo-meta">${w.num || 'no WO#'}</div>
-      <div class="wo-pay">$${w.pay.toFixed(2)}</div>
-      <div class="wo-actions">
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(w.addr)}" target="_blank">🗺 MAP</a>
-        <button class="done-btn" onclick="toggleDone(${w.id})">${w.done?'↺ UNDO':'✓ DONE'}</button>
-        <button class="del-btn" onclick="deleteWO(${w.id})">✕ DEL</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderTopStats(){
-  const earned = state.wos.filter(w=>w.done).reduce((s,w)=>s+w.pay,0);
-  const pending = state.wos.filter(w=>!w.done).reduce((s,w)=>s+w.pay,0);
-  const doneCt = state.wos.filter(w=>w.done).length;
-  document.getElementById('statEarned').textContent = '$'+earned.toFixed(0);
-  document.getElementById('statPending').textContent = '$'+pending.toFixed(0);
-  document.getElementById('statDone').textContent = doneCt+'/'+state.wos.length;
-}
-
-function renderRoute(){
-  const open = state.wos.filter(w=>!w.done);
-  const list = document.getElementById('routeList');
-  if(open.length===0){ list.innerHTML = '<div class="empty">No open stops.</div>'; return; }
-  list.innerHTML = open.map((w,i)=>`
-    <div class="wo ${w.priority}">
-      <div class="wo-top"><span class="tag">${w.carrier}</span><span class="prio ${w.priority}"><span class="dot"></span>#${i+1}</span></div>
-      <div class="wo-addr">${w.addr}</div>
-      <div class="wo-pay">$${w.pay.toFixed(2)}</div>
-    </div>
-  `).join('');
-}
-
-function openFullRoute(){
-  const open = state.wos.filter(w=>!w.done);
-  if(open.length===0){ alert('No open work orders to route.'); return; }
-  if(open.length===1){
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(open[0].addr)}`, '_blank');
-    return;
-  }
-  const destination = encodeURIComponent(open[open.length-1].addr);
-  const origin = encodeURIComponent(open[0].addr);
-  const waypoints = open.slice(1,-1).map(w=>encodeURIComponent(w.addr)).join('|');
-  let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
-  if(waypoints) url += `&waypoints=${waypoints}`;
-  window.open(url, '_blank');
-}
-
-const osintTools = {
-  property: {
-    label: 'PROPERTY & OWNER RECORDS', color:'green',
-    items:[
-      { name:'County Assessor (SL County)', url:'https://slco.org/assessor/' },
-      { name:'Utah Property Records', url:'https://www.utahcounty.gov/LandRecords/Search.asp' },
-      { name:'BlackBookOnline Public Records', url:'https://www.blackbookonline.info/USA-Public-Records.aspx' },
-      { name:'Zillow (owner/listing history)', url:'https://www.zillow.com/homes/{addr}_rb/' },
-      { name:'NeighborWho', url:'https://www.neighborwho.com/address/{addr}' },
-    ]
-  },
-  people: {
-    label:'OWNER / OCCUPANT LOOKUP', color:'blue',
-    items:[
-      { name:'TruePeopleSearch', url:'https://www.truepeoplesearch.com/results?name={name}&citystatezip={city}%20{state}' },
-      { name:'FastPeopleSearch', url:'https://www.fastpeoplesearch.com/name/{name}' },
-      { name:'WhitePages', url:'https://www.whitepages.com/name/{name_u}' },
-    ]
-  },
-  courts: {
-    label:'COURT / FORECLOSURE RECORDS', color:'',
-    items:[
-      { name:'Utah State Courts (Xchange)', url:'https://www.utcourts.gov/xchange/' },
-      { name:'CourtListener', url:'https://www.courtlistener.com/?q=%22{name}%22&type=p' },
-      { name:'JudyRecords', url:'https://www.judyrecords.com/search#v=1&query={name}' },
-    ]
-  },
-  occupancy: {
-    label:'VACANCY / OCCUPANCY SIGNALS', color:'red',
-    items:[
-      { name:'USPS Vacancy Check', url:'https://tools.usps.com/find-location.htm' },
-      { name:'Utility Connect Lookup', url:'https://www.google.com/search?q={addr}+utility+service+status' },
-      { name:'Google Street View (visual check)', url:'https://www.google.com/maps/place/{addr}' },
-    ]
-  }
+// === TEMPLATE LIBRARY ===
+// Each template returns an object: { title, desc, build(job, name) -> string, warn? }
+const TEMPLATES = {
+  Allstate: [
+    {
+      key: 'intro',
+      title: '📋 Standard Intro',
+      desc: 'First contact - heads up I am coming',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate Insurance field services. I am scheduled to conduct an exterior survey of your property at ${j.address}. This is an EXTERIOR ONLY inspection — no interior access needed. I will be visiting shortly. Questions? Reply here. Thank you!`
+    },
+    {
+      key: 'busy',
+      title: '⏰ Been Busy / Coming This Week',
+      desc: 'You called, no answer - just letting them know',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services. I tried to reach you about the exterior survey at ${j.address}. My week has been busy but I will be stopping by sometime this week to complete it. This is EXTERIOR ONLY — you do not need to be home. Thanks for your patience!`
+    },
+    {
+      key: 'lasttry',
+      title: '⚠️ LAST TRY - Before Refused',
+      desc: 'Final attempt warning - cannot reach / no access',
+      warn: true,
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Allstate field services regarding the exterior survey at ${j.address}. I have made multiple attempts to reach you and complete the survey without success. This is my final attempt before I have to report the inspection as REFUSED, which may affect your claim. Please reply or call me back today so I can complete this. Thank you.`
+    }
+  ],
+  Farmers: [
+    {
+      key: 'intro',
+      title: '📋 Standard Intro',
+      desc: 'First contact - heads up I am coming',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers Insurance field services. I am assigned to complete an exterior property survey at ${j.address}. This is an EXTERIOR inspection only — you do not need to be home. I will be by shortly. Questions? Reply here. Thank you!`
+    },
+    {
+      key: 'busy',
+      title: '⏰ Been Busy / Coming This Week',
+      desc: 'You called, no answer - just letting them know',
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services. I tried to reach you about the exterior survey at ${j.address}. It has been a busy week on my end but I will be stopping by sometime this week to take care of it. EXTERIOR ONLY — no need to be home. Thanks for your patience!`
+    },
+    {
+      key: 'lasttry',
+      title: '⚠️ LAST TRY - Before Refused',
+      desc: 'Final attempt warning - cannot reach / no access',
+      warn: true,
+      build: (j, n) => `Hi ${j.contactName}, this is ${n} with Farmers field services regarding the exterior survey at ${j.address}. I have tried multiple times to reach you and complete it without success. This is my final attempt before I must report the inspection as REFUSED, which may impact your claim. Please reply or call me back today. Thank you.`
+    }
+  ]
 };
 
-function getOSInputs(){
-  const full = document.getElementById('osFull').value.trim();
-  const city = document.getElementById('osCity').value.trim();
-  const state_ = document.getElementById('osState').value.trim();
-  const addr = document.getElementById('osAddr').value.trim();
-  const parts = full.split(' ');
-  return { full, city, state_, addr, first: parts[0]||'', last: parts.slice(1).join(' ')||'' };
+function getTemplates(client) { return TEMPLATES[client] || []; }
+
+// LOAD saved data
+function loadSaved() {
+  try {
+    return {
+      jobs: JSON.parse(localStorage.getItem('routepro_jobs') || 'null'),
+      done: JSON.parse(localStorage.getItem('routepro_done') || 'null'),
+      name: localStorage.getItem('routepro_name') || null,
+      contactLog: JSON.parse(localStorage.getItem('routepro_contactlog') || '{}')
+    };
+  } catch(e) { return {}; }
 }
 
-function buildOSUrl(template, i){
-  return template
-    .replace('{name}', encodeURIComponent(i.full))
-    .replace('{name_u}', i.full.toLowerCase().replace(/\s+/g,'-'))
-    .replace('{city}', encodeURIComponent(i.city))
-    .replace('{state}', encodeURIComponent(i.state_))
-    .replace('{addr}', encodeURIComponent(i.addr));
+function saveData() {
+  try {
+    localStorage.setItem('routepro_jobs', JSON.stringify(state.jobs));
+    localStorage.setItem('routepro_done', JSON.stringify(state.done));
+    localStorage.setItem('routepro_name', state.name);
+    localStorage.setItem('routepro_contactlog', JSON.stringify(state.contactLog));
+  } catch(e) {}
 }
 
-function osLaunch(url){
-  const i = getOSInputs();
-  if(!i.full && !i.addr){ alert('Enter a name or address first.'); return; }
-  window.open(buildOSUrl(url, i), '_blank');
+const saved = loadSaved();
+
+let state = {
+  jobs: saved.jobs || [
+    { id:1, address:"1234 W 4700 S, Taylorsville, UT", client:"Allstate", contactName:"John Smith", contactPhone:"8015550101", priority:"high", claimNumber:"ALL-2024-0091" },
+    { id:2, address:"892 E 3300 S, Salt Lake City, UT", client:"Farmers", contactName:"Maria Lopez", contactPhone:"8015550182", priority:"high", claimNumber:"FRM-2024-0342" },
+    { id:3, address:"3401 S 900 W, South Salt Lake, UT", client:"FI-NC", contactName:"", contactPhone:"", priority:"medium", claimNumber:"FI-2024-0055" },
+    { id:4, address:"5620 S Redwood Rd, Murray, UT", client:"Farmers", contactName:"Tanya Brooks", contactPhone:"8015550374", priority:"medium", claimNumber:"FRM-2024-0388" },
+    { id:5, address:"410 E 12300 S, Draper, UT", client:"FI-DH", contactName:"", contactPhone:"", priority:"low", claimNumber:"FI-2024-0061" },
+    { id:6, address:"2245 W 7800 S, West Jordan, UT", client:"Allstate", contactName:"Sandra Lee", contactPhone:"8015550556", priority:"medium", claimNumber:"ALL-2024-0117" },
+  ],
+  done: saved.done || [],
+  tab: 'route',
+  name: saved.name || 'Your Name',
+  editName: false,
+  modal: null,
+  selectedTemplate: 'intro',
+  optimized: false,
+  userLat: null,
+  userLng: null,
+  // Contact log: { jobId: { calls: [{time, type}], texts: [{time, type}], coords: {lat, lng}, travelMin: number } }
+  contactLog: saved.contactLog || {},
+  form: { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' },
+  addMode: 'single',
+  bulkClient: 'Allstate',
+  bulkResult: null
+};
+
+function isFI(client) { return client === 'FI-NC' || client === 'FI-DH'; }
+
+// === JOB TIMER ===
+function startJobTimer(jobId) {
+  if (!state.contactLog[jobId]) state.contactLog[jobId] = { calls:[], texts:[] };
+  state.contactLog[jobId].timerStart = Date.now();
+  state.contactLog[jobId].timerEnd = null;
+  saveData();
+  showToast('⏱ Timer started');
+  render();
 }
 
-function osLaunchCategory(key){
-  const i = getOSInputs();
-  if(!i.full && !i.addr){ alert('Enter a name or address first.'); return; }
-  osintTools[key].items.forEach((t,idx)=>{
-    setTimeout(()=>window.open(buildOSUrl(t.url, i), '_blank'), idx*300);
+function stopJobTimer(jobId) {
+  const log = state.contactLog[jobId];
+  if (!log || !log.timerStart) return;
+  log.timerEnd = Date.now();
+  const elapsed = log.timerEnd - log.timerStart;
+  if (!log.totalTimeMs) log.totalTimeMs = 0;
+  log.totalTimeMs += elapsed;
+  log.timerStart = null;
+  saveData();
+  showToast(`⏱ ${formatDuration(elapsed)} logged`);
+  render();
+}
+
+function getTimerStatus(jobId) {
+  const log = state.contactLog[jobId];
+  if (!log) return { running: false, totalMs: 0 };
+  if (log.timerStart) {
+    const liveElapsed = Date.now() - log.timerStart;
+    return { running: true, totalMs: (log.totalTimeMs || 0) + liveElapsed, liveMs: liveElapsed };
+  }
+  return { running: false, totalMs: log.totalTimeMs || 0 };
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s.toString().padStart(2,'0')}s`;
+  return `${s}s`;
+}
+
+function setState(updates, skipSave) {
+  Object.assign(state, updates);
+  if (!skipSave) saveData();
+  render();
+}
+
+function syncFormFromDOM() {
+  const fields = ['address','contactName','contactPhone','claimNumber'];
+  fields.forEach(f => {
+    const el = document.getElementById('form_' + f);
+    if (el) state.form[f] = el.value;
   });
 }
 
-function toggleCat(key){
-  document.getElementById('catbody-'+key).classList.toggle('collapsed');
+// === GPS ===
+let gpsWatchId = null;
+function startGPS() {
+  if (gpsWatchId !== null) return;
+  if (!navigator.geolocation) return;
+  gpsWatchId = navigator.geolocation.watchPosition(
+    pos => {
+      const firstFix = state.userLat === null;
+      state.userLat = pos.coords.latitude;
+      state.userLng = pos.coords.longitude;
+      const statusEl = document.getElementById('map-status-text');
+      if (statusEl) statusEl.innerHTML = `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span><span style="color:var(--muted);margin-left:auto;">${state.jobs.filter(j=>!state.done.includes(j.id)).length} stops pending</span>`;
+      if (state.tab === 'map' && window._youMarker) {
+        window._youMarker.setLatLng([state.userLat, state.userLng]);
+      } else if (state.tab === 'map' && window._leafletMap && state.userLat) {
+        addYouMarker(window._leafletMap);
+      }
+      // First fix: refresh travel times on the route view
+      if (firstFix && state.tab === 'route') {
+        refreshAllTravelTimes();
+      }
+    },
+    err => {
+      const statusEl = document.getElementById('map-status-text');
+      if (statusEl) statusEl.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:var(--red);"></div><span style="color:var(--red)">GPS unavailable</span>`;
+    },
+    { enableHighAccuracy: true, maximumAge: 15000 }
+  );
 }
 
-function renderOsint(){
-  const c = document.getElementById('osintCats');
-  c.innerHTML = Object.entries(osintTools).map(([key,cat])=>`
-    <div class="cat">
-      <div class="cat-head" onclick="toggleCat('${key}')">
-        <span class="title">${cat.label}</span>
-        <span class="count">${cat.items.length} SOURCES</span>
-      </div>
-      <div class="cat-body" id="catbody-${key}">
-        ${cat.items.map(t=>`
-          <div class="tool-item">
-            <span>${t.name}</span>
-            <a href="javascript:void(0)" onclick="osLaunch('${t.url}')">OPEN →</a>
+// Auto-start GPS once at app launch so travel times can populate
+function initLocationServices() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      state.userLat = pos.coords.latitude;
+      state.userLng = pos.coords.longitude;
+      refreshAllTravelTimes();
+    },
+    err => {},
+    { enableHighAccuracy: true, maximumAge: 60000, timeout: 10000 }
+  );
+  startGPS();
+}
+
+// === TRAVEL TIME ===
+// Using haversine + average city speed of 30 mph as a quick estimate.
+// More accurate routing would need a paid API; this gets you in the ballpark.
+function haversineMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Geocode cache so we don't hammer Nominatim
+const geocodeCache = JSON.parse(localStorage.getItem('routepro_geocache') || '{}');
+function saveGeocache() {
+  try { localStorage.setItem('routepro_geocache', JSON.stringify(geocodeCache)); } catch(e) {}
+}
+
+async function geocodeAddress(address) {
+  if (geocodeCache[address]) return geocodeCache[address];
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+    const data = await r.json();
+    if (data[0]) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      geocodeCache[address] = coords;
+      saveGeocache();
+      return coords;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function refreshAllTravelTimes() {
+  if (!state.userLat) return;
+  for (const job of state.jobs) {
+    if (state.done.includes(job.id)) continue;
+    const coords = await geocodeAddress(job.address);
+    if (!coords) continue;
+    const miles = haversineMiles(state.userLat, state.userLng, coords.lat, coords.lng);
+    // 30 mph avg = 2 minutes per mile
+    const minutes = Math.max(1, Math.round(miles * 2));
+    if (!state.contactLog[job.id]) state.contactLog[job.id] = { calls:[], texts:[] };
+    state.contactLog[job.id].travelMin = minutes;
+    state.contactLog[job.id].travelMiles = miles;
+    // Update just this card's chip without full re-render
+    const chip = document.getElementById(`travel-${job.id}`);
+    if (chip) chip.innerHTML = `🚗 ${minutes} min · ${miles.toFixed(1)} mi`;
+  }
+  saveData();
+}
+
+// === CONTACT LOGGING ===
+function logCall(jobId) {
+  if (!state.contactLog[jobId]) state.contactLog[jobId] = { calls:[], texts:[] };
+  if (!state.contactLog[jobId].calls) state.contactLog[jobId].calls = [];
+  state.contactLog[jobId].calls.push({ time: Date.now() });
+  saveData();
+}
+
+function logText(jobId, templateKey) {
+  if (!state.contactLog[jobId]) state.contactLog[jobId] = { calls:[], texts:[] };
+  if (!state.contactLog[jobId].texts) state.contactLog[jobId].texts = [];
+  state.contactLog[jobId].texts.push({ time: Date.now(), type: templateKey });
+  saveData();
+}
+
+function getCallCount(jobId) {
+  return (state.contactLog[jobId]?.calls || []).length;
+}
+
+function getLastCall(jobId) {
+  const calls = state.contactLog[jobId]?.calls || [];
+  return calls.length ? calls[calls.length - 1].time : null;
+}
+
+function getLastText(jobId) {
+  const texts = state.contactLog[jobId]?.texts || [];
+  return texts.length ? texts[texts.length - 1].time : null;
+}
+
+// Returns true if a call was made and no follow-up text was sent within FOLLOWUP_HOURS
+function isFollowupDue(jobId) {
+  const lastCall = getLastCall(jobId);
+  if (!lastCall) return false;
+  const lastText = getLastText(jobId);
+  if (lastText && lastText > lastCall) return false; // already followed up
+  const hoursSince = (Date.now() - lastCall) / (1000 * 60 * 60);
+  return hoursSince >= 0; // show countdown; "due" means visible
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return min + 'm ago';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + 'h ago';
+  const day = Math.floor(hr / 24);
+  return day + 'd ago';
+}
+
+function callJob(jobId) {
+  const job = state.jobs.find(j => j.id === jobId);
+  if (!job || !job.contactPhone) {
+    showToast('No phone number for this job');
+    return;
+  }
+  logCall(jobId);
+  showToast(`📞 Calling ${job.contactName} · attempt #${getCallCount(jobId)}`);
+  // Trigger the actual phone dialer
+  window.location.href = `tel:${job.contactPhone.replace(/\D/g,'')}`;
+  // Re-render after a beat so the chip updates
+  setTimeout(() => render(), 500);
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// === RENDER ===
+function render() {
+  const app = document.getElementById('app');
+  const pending = state.jobs.filter(j => !state.done.includes(j.id));
+  const completed = state.jobs.filter(j => state.done.includes(j.id));
+  const earned = completed.reduce((s, j) => s + PAY[j.client], 0);
+  const pendingPay = pending.reduce((s, j) => s + PAY[j.client], 0);
+  const totalPay = state.jobs.reduce((s, j) => s + PAY[j.client], 0);
+
+  app.innerHTML = `
+    ${state.modal ? renderModal() : ''}
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="header-label">FIELD INSPECTOR</div>
+          <div class="header-title">ROUTE PRO</div>
+          <div class="name-row">
+            ${state.editName
+              ? `<input class="name-input" id="nameInput" value="${state.name}" onblur="saveName()" onkeydown="if(event.key==='Enter')saveName()" autofocus/>`
+              : `<span class="name-display" onclick="setState({editName:true})">✏️ ${state.name}</span>`
+            }
           </div>
-        `).join('')}
-        <button class="btn small launchall" onclick="osLaunchCategory('${key}')">⚡ LAUNCH ALL ${cat.label}</button>
+        </div>
+        <div class="header-right">
+          <div style="font-size:10px;color:#86efac;font-family:'Rajdhani',sans-serif;">SURVEYS</div>
+          <div class="survey-count">${state.jobs.length}</div>
+          <div class="survey-rate" style="font-size:9px;color:#86efac;">mixed rates</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box" style="border:1px solid #00ff8870;background:#15402a;">
+          <div class="stat-label" style="color:var(--green);">EARNED</div>
+          <div class="stat-value" style="color:var(--green);">$${earned.toFixed(2)}</div>
+        </div>
+        <div class="stat-box" style="border:1px solid #5dd4ff70;background:#1a3340;">
+          <div class="stat-label" style="color:var(--blue);">PENDING</div>
+          <div class="stat-value" style="color:var(--blue);">$${pendingPay.toFixed(2)}</div>
+        </div>
+        <div class="stat-box" style="border:1px solid #ffb73370;background:#3a2a0a;">
+          <div class="stat-label" style="color:var(--orange);">DONE</div>
+          <div class="stat-value" style="color:var(--orange);">${state.done.length}/${state.jobs.length}</div>
+        </div>
       </div>
     </div>
-  `).join('');
-}
 
-function renderEarnings(){
-  const byCarrier = {};
-  state.wos.filter(w=>w.done).forEach(w=>{
-    byCarrier[w.carrier] = (byCarrier[w.carrier]||0) + w.pay;
-  });
-  const el = document.getElementById('earnBreakdown');
-  const rows = Object.entries(byCarrier);
-  if(rows.length===0){ el.innerHTML = '<div class="empty">No completed jobs yet.</div>'; return; }
-  el.innerHTML = rows.map(([c,amt])=>`<div class="earn-row"><span>${c}</span><b>$${amt.toFixed(2)}</b></div>`).join('');
-}
+    <div class="tabs">
+      <button class="tab ${state.tab==='route'?'active':''}" onclick="setState({tab:'route'})">🗺 ROUTE</button>
+      <button class="tab ${state.tab==='text'?'active':''}" onclick="setState({tab:'text'})">📱 TEXTS</button>
+      <button class="tab ${state.tab==='add'?'active':''}" onclick="setState({tab:'add'})">➕ ADD</button>
+      <button class="tab ${state.tab==='map'?'active':''}" onclick="openMapTab()">📡 MAP</button>
+      <button class="tab ${state.tab==='stats'?'active':''}" onclick="setState({tab:'stats'})">📊 STATS</button>
+    </div>
 
-function exportCSV(){
-  if(state.wos.length===0){ alert('Nothing to export yet.'); return; }
-  let csv = 'Address,Carrier,Priority,WO Number,Pay,Status\n';
-  state.wos.forEach(w=>{
-    csv += `"${w.addr}","${w.carrier}","${w.priority}","${w.num}",${w.pay.toFixed(2)},"${w.done?'Done':'Pending'}"\n`;
-  });
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'firp_earnings_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
+    <div class="content" style="${state.tab==='map'?'padding:0;':''}">
+      ${state.tab==='route' ? renderRoute() : ''}
+      ${state.tab==='text' ? renderText() : ''}
+      ${state.tab==='add' ? renderAdd() : ''}
+      ${state.tab==='map' ? renderMap() : ''}
+      ${state.tab==='stats' ? renderStats(earned, pendingPay, totalPay) : ''}
+    </div>
+  `;
 
-function resetShift(){
-  if(confirm('Clear ALL work orders? This cannot be undone.')){
-    state.wos = [];
-    save(); renderAll();
+  if (state.editName) {
+    const inp = document.getElementById('nameInput');
+    if (inp) inp.focus();
   }
 }
 
-function renderAll(){
-  renderWOList();
-  renderTopStats();
+function renderModal() {
+  const j = state.modal;
+  if (!j) return '';
+  const templates = getTemplates(j.client);
+  const selected = templates.find(t => t.key === state.selectedTemplate) || templates[0];
+  const msg = selected ? selected.build(j, state.name) : '';
+  const callCount = getCallCount(j.id);
+  const lastCall = getLastCall(j.id);
+
+  return `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-label">PREVIEW TEXT MESSAGE</div>
+        <div class="modal-name">${j.contactName}</div>
+        <div class="modal-sub" style="color:${CC[j.client]}">${j.client} · ${j.contactPhone}</div>
+        ${callCount > 0 ? `
+          <div style="background:rgba(255,170,0,0.1);border:1px solid #ffaa0044;border-radius:6px;padding:8px 10px;margin-bottom:14px;font-size:11px;color:var(--orange);font-family:'Rajdhani',sans-serif;">
+            📞 ${callCount} call attempt${callCount>1?'s':''} · last ${timeAgo(lastCall)}
+          </div>
+        ` : ''}
+        <div class="modal-label" style="margin-top:4px;">PICK A TEMPLATE</div>
+        <div class="template-picker">
+          ${templates.map(t => `
+            <button class="template-option ${t.key===state.selectedTemplate?'active':''} ${t.warn?'warn':''}" onclick="pickTemplate('${t.key}')">
+              <div class="template-title">${t.title}</div>
+              <div class="template-desc">${t.desc}</div>
+            </button>
+          `).join('')}
+        </div>
+        <div class="modal-label">PREVIEW</div>
+        <div class="msg-preview">${msg}</div>
+        <div class="modal-btns">
+          <button class="modal-cancel" onclick="closeModal()">CANCEL</button>
+          <button class="modal-send" onclick="sendSMS()">📱 SEND TEXT</button>
+        </div>
+      </div>
+    </div>`;
 }
-renderOsint();
-renderAll();
+
+function pickTemplate(key) {
+  state.selectedTemplate = key;
+  render();
+}
+
+function closeModal() {
+  state.modal = null;
+  state.selectedTemplate = 'intro';
+  render();
+}
+
+function renderJobExtras(job) {
+  const log = state.contactLog[job.id] || {};
+  const callCount = (log.calls || []).length;
+  const lastCall = getLastCall(job.id);
+  const lastText = getLastText(job.id);
+  const travelMin = log.travelMin;
+  const travelMiles = log.travelMiles;
+
+  let chips = [];
+
+  // Travel time chip
+  if (travelMin) {
+    chips.push(`<span class="extra-chip travel" id="travel-${job.id}">🚗 ${travelMin} min · ${travelMiles.toFixed(1)} mi</span>`);
+  } else if (state.userLat) {
+    chips.push(`<span class="extra-chip travel" id="travel-${job.id}">🚗 calculating...</span>`);
+  } else {
+    chips.push(`<span class="extra-chip travel" id="travel-${job.id}" style="opacity:0.5;">🚗 GPS off</span>`);
+  }
+
+  // Call attempt chip
+  if (callCount > 0) {
+    chips.push(`<span class="extra-chip attempts">📞 ${callCount}x · ${timeAgo(lastCall)}</span>`);
+  }
+
+  // Last text chip
+  if (lastText) {
+    chips.push(`<span class="extra-chip last-call">💬 texted ${timeAgo(lastText)}</span>`);
+  }
+
+  // Follow-up needed chip
+  if (lastCall && (!lastText || lastText < lastCall)) {
+    const hoursSince = (Date.now() - lastCall) / (1000 * 60 * 60);
+    if (hoursSince < FOLLOWUP_HOURS) {
+      chips.push(`<span class="extra-chip followup-due">⚠️ NEEDS FOLLOW-UP TEXT</span>`);
+    }
+  }
+
+  // Refused warning - 3+ call attempts
+  if (callCount >= 3) {
+    chips.push(`<span class="extra-chip refused-warn">⛔ ${callCount} ATTEMPTS - SEND LAST TRY</span>`);
+  }
+
+  // Timer chip
+  const timer = getTimerStatus(job.id);
+  if (timer.running) {
+    chips.push(`<span class="timer-chip running" id="timer-${job.id}">⏱ ${formatDuration(timer.totalMs)}</span>`);
+  } else if (timer.totalMs > 0) {
+    chips.push(`<span class="timer-chip done">⏱ ${formatDuration(timer.totalMs)}</span>`);
+  }
+
+  return chips.length ? `<div class="job-extra">${chips.join('')}</div>` : '';
+}
+
+function renderRoute() {
+  return `
+    <div class="action-row">
+      <button class="action-btn btn-optimize" onclick="optimize()">
+        ${state.optimized ? '✓ OPTIMIZED' : '⚡ OPTIMIZE'}
+      </button>
+      <button class="action-btn btn-route" onclick="fullRoute()">🧭 FULL ROUTE</button>
+    </div>
+    ${state.jobs.map((job, idx) => {
+      const d = state.done.includes(job.id);
+      const c = CC[job.client];
+      const isFIJob = isFI(job.client);
+      const priorityColor = job.priority==='high' ? '#ef5350' : job.priority==='medium' ? '#ff9800' : '#4a6572';
+      const priorityLabel = job.priority==='high' ? '● HIGH' : job.priority==='medium' ? '● MED' : '○ LOW';
+      const hasPhone = !isFIJob && job.contactPhone;
+      return `
+        <div class="job-card ${d?'done':''}">
+          <div class="side-bar" style="background:${d?'#1a2f3a':c}"></div>
+          <div class="job-inner">
+            <div class="job-info">
+              <div class="job-badges">
+                <span class="badge" style="background:${c}22;color:${c};border-color:${c}">${CLIENT_LABELS[job.client]}</span>
+                <span class="priority-dot" style="color:${priorityColor};font-size:9px;">${priorityLabel}</span>
+                ${job.client==='FI-NC' ? '<span class="fi-only-badge">NO CONTACT</span>' : ''}
+                ${job.client==='FI-DH' ? `<span style="background:#ffd54f22;border:1px solid #ffd54f;color:#ffd54f;font-size:9px;border-radius:4px;padding:2px 7px;letter-spacing:1px;font-family:'Rajdhani',sans-serif;font-weight:bold;">🟡 DOOR HANGER</span>` : ''}
+              </div>
+              <div class="job-address">#${String(idx+1).padStart(2,'0')} — ${job.address}</div>
+              <div class="job-meta">${job.claimNumber}${!isFIJob ? ' · '+job.contactName : ''}</div>
+              <div class="job-type">${job.client==='FI-NC' ? '🔍 NO CONTACT — INSPECT & LEAVE' : job.client==='FI-DH' ? '🟡 KNOCK & LEAVE DOOR HANGER' : '🏠 EXTERIOR ONLY'}</div>
+              <div class="job-pay ${isFIJob?'fi-pay':''}">$${PAY[job.client].toFixed(2)}</div>
+              ${renderJobExtras(job)}
+            </div>
+            <div class="job-actions">
+              <button class="jbtn" style="color:var(--blue);border-color:#29b6f644;" onclick="openMap('${job.address}')">📍 MAP</button>
+              ${hasPhone ? `<button class="jbtn" style="color:var(--green);border-color:#00ff8866;" onclick="callJob(${job.id})">📞 CALL</button>` : ''}
+              ${!isFIJob ? `<button class="jbtn" style="color:${c};border-color:${c}44;" onclick="openText(${job.id})">📱 TEXT</button>` : `<button class="jbtn" style="color:var(--muted);border-color:#1a2f3a;opacity:0.4;cursor:default;">NO TEXT</button>`}
+              ${(() => {
+                const t = getTimerStatus(job.id);
+                if (d) return '';
+                if (t.running) return `<button class="jbtn timer-stop" onclick="stopJobTimer(${job.id})">⏹ STOP</button>`;
+                return `<button class="jbtn timer-start" onclick="startJobTimer(${job.id})">${t.totalMs>0?'▶ RESUME':'▶ START'}</button>`;
+              })()}
+              <button class="jbtn" style="color:${d?'var(--green)':'var(--muted)'};border-color:${d?'#00e67644':'#1a2f3a'};" onclick="toggleDone(${job.id})">${d?'✓ DONE':'○ DONE'}</button>
+              <button class="jbtn" style="color:var(--red);border-color:#ef535044;" onclick="removeJob(${job.id})">✕</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+function renderText() {
+  const carriers = ['Allstate', 'Farmers'];
+  let html = `<div class="section-header">TEXT CLIENTS BY CARRIER</div>`;
+
+  carriers.forEach(client => {
+    const c = CC[client];
+    const cjobs = state.jobs.filter(j => j.client===client && !state.done.includes(j.id));
+    html += `
+      <div class="carrier-section" style="border:1px solid ${c}22;">
+        <div class="carrier-header">
+          <div>
+            <div class="carrier-name" style="color:${c}">${client}</div>
+            <div style="font-size:11px;color:var(--muted)">${cjobs.length} pending · exterior surveys</div>
+          </div>
+          <span class="carrier-tag" style="color:${c};border-color:${c}">EXTERIOR ONLY</span>
+        </div>
+        ${cjobs.length===0
+          ? `<div class="empty-msg">All ${client} surveys complete ✓</div>`
+          : cjobs.map(job => {
+              const callCount = getCallCount(job.id);
+              const lastCall = getLastCall(job.id);
+              const lastText = getLastText(job.id);
+              const needsFollowup = lastCall && (!lastText || lastText < lastCall);
+              return `
+                <div class="text-job-row" style="${needsFollowup?'border-color:var(--red);background:rgba(255,82,82,0.05);':''}">
+                  <div>
+                    <div class="text-job-name">${job.contactName}</div>
+                    <div class="text-job-addr">${job.address.split(',')[0]}</div>
+                    <div class="text-job-addr">${job.claimNumber}</div>
+                    ${callCount > 0 ? `<div class="text-job-addr" style="color:var(--orange);margin-top:3px;">📞 ${callCount}x ${timeAgo(lastCall)}${needsFollowup?' · NEEDS FOLLOW-UP':''}</div>` : ''}
+                  </div>
+                  <button class="text-send-btn" style="background:${c}22;color:${c};border-color:${c}" onclick="openText(${job.id})">📱 TEXT</button>
+                </div>`;
+            }).join('')
+        }
+      </div>`;
+  });
+
+  // FI No Contact section
+  const fiNCJobs = state.jobs.filter(j => j.client==='FI-NC' && !state.done.includes(j.id));
+  html += `
+    <div class="fi-section">
+      <div class="carrier-header">
+        <div>
+          <div class="carrier-name" style="color:var(--purple)">FI — No Contact</div>
+          <div style="font-size:11px;color:var(--muted)">${fiNCJobs.length} pending · no contact needed</div>
+        </div>
+        <span class="carrier-tag" style="color:var(--purple);border-color:var(--purple)">SHOW UP ONLY</span>
+      </div>
+      ${fiNCJobs.length===0
+        ? `<div class="empty-msg">All FI No Contact inspections complete ✓</div>`
+        : fiNCJobs.map(job => `
+          <div class="fi-job-row">
+            <div class="text-job-name" style="color:var(--text)">${job.address}</div>
+            <div class="text-job-addr">${job.claimNumber}</div>
+            <div class="fi-no-contact">🔍 Just show up — no knock, no text</div>
+          </div>`).join('')
+      }
+    </div>`;
+
+  // FI Door Hanger section
+  const fiDHJobs = state.jobs.filter(j => j.client==='FI-DH' && !state.done.includes(j.id));
+  html += `
+    <div class="fi-section" style="border-color:#ffd54f33;">
+      <div class="carrier-header">
+        <div>
+          <div class="carrier-name" style="color:#ffd54f">FI — Door Hanger</div>
+          <div style="font-size:11px;color:var(--muted)">${fiDHJobs.length} pending · knock & leave hanger</div>
+        </div>
+        <span class="carrier-tag" style="color:#ffd54f;border-color:#ffd54f">DOOR HANGER</span>
+      </div>
+      ${fiDHJobs.length===0
+        ? `<div class="empty-msg">All FI Door Hanger inspections complete ✓</div>`
+        : fiDHJobs.map(job => `
+          <div class="fi-job-row" style="border-color:#ffd54f22;">
+            <div class="text-job-name" style="color:var(--text)">${job.address}</div>
+            <div class="text-job-addr">${job.claimNumber}</div>
+            <div class="fi-no-contact" style="color:#ffd54f;">🟡 Knock — if no answer, leave yellow door hanger</div>
+          </div>`).join('')
+      }
+    </div>`;
+
+  return html;
+}
+
+function renderAdd() {
+  const f = state.form;
+  const isAddFI = isFI(f.client);
+  const mode = state.addMode || 'single';
+  if (mode === 'bulk') return renderBulkAdd();
+  return `
+    <div class="toggle-group" style="margin-bottom:14px;">
+      <button class="toggle-btn" onclick="setAddMode('single')">ONE AT A TIME</button>
+      <button class="toggle-btn active-fi" onclick="setAddMode('bulk')">PASTE A LIST</button>
+    </div>
+    <div class="form-card">
+      <div style="font-size:12px;letter-spacing:3px;color:var(--green);margin-bottom:18px;font-family:'Rajdhani',sans-serif;font-weight:bold;">NEW INSPECTION ORDER</div>
+
+      <div class="form-label">PROPERTY ADDRESS</div>
+      <input id="form_address" class="form-input" placeholder="123 Main St, Salt Lake City, UT" value="${f.address}"/>
+
+      <div class="form-label">CARRIER</div>
+      <div class="toggle-group" style="margin-bottom:4px;">
+        <button class="toggle-btn ${f.client==='Allstate'?'active-allstate':''}" onclick="setClient('Allstate')">Allstate</button>
+        <button class="toggle-btn ${f.client==='Farmers'?'active-farmers':''}" onclick="setClient('Farmers')">Farmers</button>
+      </div>
+      <div class="toggle-group" style="margin-bottom:12px;">
+        <button class="toggle-btn ${f.client==='FI-NC'?'active-fi':''}" onclick="setClient('FI-NC')">FI — No Contact</button>
+        <button class="toggle-btn ${f.client==='FI-DH'?'active-fi':''}" style="${f.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f22;':''}" onclick="setClient('FI-DH')">FI — Door Hanger</button>
+      </div>
+
+      ${isAddFI ? `
+        <div class="fi-notice" style="${f.client==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f11;':''}">
+          ${f.client==='FI-NC' ? '🔍 No Contact — just show up and inspect. No text generated.' : '🟡 Door Hanger — knock, if no answer leave the yellow door hanger. No text generated.'}
+        </div>
+      ` : `
+        <div class="form-label">CONTACT NAME</div>
+        <input id="form_contactName" class="form-input" placeholder="Homeowner name" value="${f.contactName}"/>
+        <div class="form-label">CONTACT PHONE</div>
+        <input id="form_contactPhone" class="form-input" placeholder="8015550100" value="${f.contactPhone}" type="tel"/>
+      `}
+
+      <div class="form-label">WO / CLAIM NUMBER</div>
+      <input id="form_claimNumber" class="form-input" placeholder="${isAddFI?'FI-2024-0100':'e.g. ALL-2024-0200'}" value="${f.claimNumber}"/>
+
+      <div class="form-label">PRIORITY</div>
+      <div class="toggle-group" style="margin-bottom:14px;">
+        <button class="toggle-btn ${f.priority==='high'?'active-high':''}" onclick="setPriority('high')">HIGH</button>
+        <button class="toggle-btn ${f.priority==='medium'?'active-medium':''}" onclick="setPriority('medium')">MED</button>
+        <button class="toggle-btn ${f.priority==='low'?'active-low':''}" onclick="setPriority('low')">LOW</button>
+      </div>
+
+      <div style="background:var(--green-dim);border:1px solid #00ff8833;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#00ff88;line-height:1.5;">
+        ${isAddFI ? '🔍 FIELD INSPECTION · $14.50 fixed rate · No text generated' : '🏠 EXTERIOR SURVEY · $14.50 fixed rate · Auto-generates text template'}
+      </div>
+
+      <button class="add-btn" onclick="addJob()">+ ADD INSPECTION</button>
+    </div>`;
+}
+
+function renderBulkAdd() {
+  const c = state.bulkClient;
+  const fi = isFI(c);
+  const format = fi ? 'Address | WO Number' : 'Address | Contact Name | Phone | WO Number';
+  const example = fi
+    ? '574 E Driggs Ave, Salt Lake City, UT 84106 | 356132364'
+    : '574 E Driggs Ave, Salt Lake City, UT 84106 | Mitchell Bandley | 3852199450 | 356132364';
+  return `
+    <div class="toggle-group" style="margin-bottom:14px;">
+      <button class="toggle-btn active-fi" onclick="setAddMode('single')">ONE AT A TIME</button>
+      <button class="toggle-btn" onclick="setAddMode('bulk')">PASTE A LIST</button>
+    </div>
+    <div class="form-card">
+      <div style="font-size:12px;letter-spacing:3px;color:#00ff88;margin-bottom:18px;font-family:'Rajdhani',sans-serif;font-weight:bold;">PASTE MULTIPLE JOBS</div>
+
+      <div class="form-label">CARRIER — pick the type these lines are</div>
+      <div class="toggle-group" style="margin-bottom:4px;">
+        <button class="toggle-btn ${c==='Allstate'?'active-allstate':''}" onclick="setBulkClient('Allstate')">Allstate</button>
+        <button class="toggle-btn ${c==='Farmers'?'active-farmers':''}" onclick="setBulkClient('Farmers')">Farmers</button>
+      </div>
+      <div class="toggle-group" style="margin-bottom:12px;">
+        <button class="toggle-btn ${c==='FI-NC'?'active-fi':''}" onclick="setBulkClient('FI-NC')">FI — No Contact</button>
+        <button class="toggle-btn ${c==='FI-DH'?'active-fi':''}" style="${c==='FI-DH'?'border-color:#ffd54f;color:#ffd54f;background:#ffd54f22;':''}" onclick="setBulkClient('FI-DH')">FI — Door Hanger</button>
+      </div>
+
+      <div style="background:#0d1f27;border:1px solid #2e5468;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:10px;letter-spacing:1px;color:#b8d4e0;margin-bottom:6px;">ONE JOB PER LINE. PUT A | BETWEEN EACH PART.</div>
+        <div style="font-size:11px;color:#ffffff;font-family:'Share Tech Mono',monospace;word-break:break-word;">${format}</div>
+        <div style="font-size:10px;color:#b8d4e0;margin-top:6px;font-family:'Share Tech Mono',monospace;word-break:break-word;">${example}</div>
+      </div>
+
+      <textarea id="bulk_text" class="form-input" rows="8" style="width:100%;resize:vertical;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.6;color:#ffffff;"></textarea>
+
+      ${state.bulkResult ? `<div style="margin-bottom:10px;font-size:13px;color:#00ff88;font-weight:bold;">${state.bulkResult}</div>` : ''}
+
+      <button class="add-btn" onclick="importBulk()">+ IMPORT THESE JOBS</button>
+    </div>`;
+}
+
+function renderStats(earned, pendingPay, totalPay) {
+  const allstateJobs = state.jobs.filter(j => j.client==='Allstate');
+  const farmersJobs = state.jobs.filter(j => j.client==='Farmers');
+  const fiNCJobs2 = state.jobs.filter(j => j.client==='FI-NC');
+  const fiDHJobs2 = state.jobs.filter(j => j.client==='FI-DH');
+  const allstateDone = allstateJobs.filter(j => state.done.includes(j.id)).length;
+  const farmersDone = farmersJobs.filter(j => state.done.includes(j.id)).length;
+  const fiNCDone = fiNCJobs2.filter(j => state.done.includes(j.id)).length;
+  const fiDHDone = fiDHJobs2.filter(j => state.done.includes(j.id)).length;
+  const pct = state.jobs.length ? Math.round((state.done.length/state.jobs.length)*100) : 0;
+
+  // Contact log totals
+  const totalCalls = Object.values(state.contactLog).reduce((s, l) => s + ((l.calls||[]).length), 0);
+  const totalTexts = Object.values(state.contactLog).reduce((s, l) => s + ((l.texts||[]).length), 0);
+  const needsFollowup = state.jobs.filter(j => {
+    const lc = getLastCall(j.id);
+    const lt = getLastText(j.id);
+    return lc && (!lt || lt < lc) && !state.done.includes(j.id);
+  }).length;
+
+  // Time tracking stats - only count finished (non-running) timers
+  const timedJobs = state.jobs.filter(j => {
+    const log = state.contactLog[j.id];
+    return log && log.totalTimeMs > 0 && !log.timerStart;
+  });
+  const totalTimeMs = timedJobs.reduce((s, j) => s + state.contactLog[j.id].totalTimeMs, 0);
+  const avgTimeMs = timedJobs.length ? totalTimeMs / timedJobs.length : 0;
+  const totalHours = totalTimeMs / (1000 * 60 * 60);
+  const earnedFromTimed = timedJobs.filter(j => state.done.includes(j.id)).reduce((s, j) => s + PAY[j.client], 0);
+  const hourlyRate = totalHours > 0 ? (earnedFromTimed / totalHours) : 0;
+
+  return `
+    <div class="stats-card">
+      <div class="stats-title">EARNINGS TODAY</div>
+      <div class="stat-row">
+        <div><div class="stat-name">Completed</div><div class="stat-sub">${state.done.length} surveys</div></div>
+        <div class="stat-amount" style="color:var(--green)">$${earned.toFixed(2)}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Pending</div><div class="stat-sub">${state.jobs.length-state.done.length} surveys</div></div>
+        <div class="stat-amount" style="color:var(--blue)">$${pendingPay.toFixed(2)}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <div style="color:var(--text);font-weight:bold;font-family:'Rajdhani',sans-serif;">Total Day</div>
+        <div class="stat-amount" style="color:var(--text);font-size:22px;">$${totalPay.toFixed(2)}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">CONTACT ACTIVITY</div>
+      <div class="stat-row">
+        <div><div class="stat-name">Calls Made</div><div class="stat-sub">across all jobs</div></div>
+        <div class="stat-amount" style="color:var(--green)">${totalCalls}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Texts Sent</div><div class="stat-sub">across all jobs</div></div>
+        <div class="stat-amount" style="color:var(--blue)">${totalTexts}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Need Follow-Up</div><div class="stat-sub">called but not texted</div></div>
+        <div class="stat-amount" style="color:${needsFollowup?'var(--red)':'var(--muted)'}">${needsFollowup}</div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">TIME TRACKING</div>
+      <div class="stat-row">
+        <div><div class="stat-name">Jobs Timed</div><div class="stat-sub">${timedJobs.length} of ${state.jobs.length}</div></div>
+        <div class="stat-amount" style="color:var(--green)">${timedJobs.length}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Total Time</div><div class="stat-sub">on-site work</div></div>
+        <div class="stat-amount" style="color:var(--blue)">${formatDuration(totalTimeMs)}</div>
+      </div>
+      <div class="stat-row">
+        <div><div class="stat-name">Avg per Job</div><div class="stat-sub">across timed jobs</div></div>
+        <div class="stat-amount" style="color:var(--orange)">${timedJobs.length ? formatDuration(avgTimeMs) : '—'}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <div style="color:var(--text);font-weight:bold;font-family:'Rajdhani',sans-serif;">Hourly Rate</div>
+        <div class="stat-amount" style="color:${hourlyRate>=20?'var(--green)':hourlyRate>=15?'var(--orange)':'var(--red)'};font-size:22px;">$${hourlyRate.toFixed(2)}/hr</div>
+      </div>
+      ${timedJobs.length === 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center;">Tap ▶ START on a job when you arrive to track time</div>` : ''}
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">BY CARRIER</div>
+      ${[
+        {name:'Allstate', jobs:allstateJobs, done:allstateDone, color:CC.Allstate},
+        {name:'Farmers', jobs:farmersJobs, done:farmersDone, color:CC.Farmers},
+        {name:'FI — No Contact', jobs:fiNCJobs2, done:fiNCDone, color:CC['FI-NC']},
+        {name:'FI — Door Hanger', jobs:fiDHJobs2, done:fiDHDone, color:'#ffd54f'},
+      ].map(c => `
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="color:${c.color};font-weight:bold;font-family:'Rajdhani',sans-serif;">${c.name}</span>
+            <span style="color:#86efac;font-size:12px;">${c.done}/${c.jobs.length} · $${(c.jobs.reduce((s,j)=>s+PAY[j.client],0)).toFixed(2)}</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:${c.jobs.length?(c.done/c.jobs.length)*100:0}%;background:${c.color};"></div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">OVERALL PROGRESS</div>
+      <div class="progress-bar-bg" style="height:12px;">
+        <div class="progress-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--green),#86efac);"></div>
+      </div>
+      <div style="text-align:right;margin-top:6px;color:#86efac;font-size:12px;">${pct}% complete</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-title">BACKUP</div>
+      <div style="font-size:11px;color:#b8d4e0;margin-bottom:12px;line-height:1.5;">Your jobs only live on this phone. Save a backup so you never lose them.</div>
+      <button class="add-btn" style="margin-bottom:10px;" onclick="exportBackup()">💾 SAVE BACKUP</button>
+      <button class="add-btn" style="background:#1a3340;border:1px solid #5dd4ff;color:#5dd4ff;box-shadow:none;" onclick="document.getElementById('restoreFileInput').click()">📂 RESTORE FROM BACKUP</button>
+      <input type="file" id="restoreFileInput" accept="application/json" style="display:none;" onchange="handleRestoreFile(event)"/>
+    </div>`;
+}
+
+// Actions
+function exportBackup() {
+  const backup = {
+    jobs: state.jobs,
+    done: state.done,
+    name: state.name,
+    contactLog: state.contactLog,
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = 'firp-backup-' + dateStr + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function handleRestoreFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.jobs || !Array.isArray(data.jobs)) {
+        alert('That file does not look like a FIRP backup.');
+        return;
+      }
+      if (!confirm('This will replace what is on your phone now with this backup (' + data.jobs.length + ' jobs). Continue?')) return;
+      state.jobs = data.jobs || [];
+      state.done = data.done || [];
+      state.name = data.name || state.name;
+      state.contactLog = data.contactLog || {};
+      saveData();
+      render();
+      alert('Restored ' + state.jobs.length + ' jobs.');
+    } catch (err) {
+      alert('Could not read that file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function saveName() {
+  const inp = document.getElementById('nameInput');
+  if (inp) setState({ name: inp.value || 'Your Name', editName: false });
+}
+
+function optimize() {
+  const sorted = [...state.jobs].sort((a, b) => {
+    if (state.done.includes(a.id)) return 1;
+    if (state.done.includes(b.id)) return -1;
+    const po = {high:0, medium:1, low:2};
+    return po[a.priority] - po[b.priority];
+  });
+  setState({ jobs: sorted, optimized: true });
+}
+
+function fullRoute() {
+  const pending = state.jobs.filter(j => !state.done.includes(j.id));
+  if (!pending.length) return;
+  window.open(`https://www.google.com/maps/dir/${pending.map(j=>encodeURIComponent(j.address)).join('/')}`, '_blank');
+}
+
+function openMap(addr) {
+  window.open(`https://maps.google.com/maps?q=${encodeURIComponent(addr)}`, '_blank');
+}
+
+function openText(id) {
+  const job = state.jobs.find(j => j.id === id);
+  if (!job || isFI(job.client)) return;
+  // Auto-pick the right template based on call history
+  const callCount = getCallCount(id);
+  let defaultTemplate = 'intro';
+  if (callCount >= 3) defaultTemplate = 'lasttry';
+  else if (callCount >= 1) defaultTemplate = 'busy';
+  state.modal = job;
+  state.selectedTemplate = defaultTemplate;
+  render();
+}
+
+function sendSMS() {
+  const j = state.modal;
+  if (!j) return;
+  const templates = getTemplates(j.client);
+  const selected = templates.find(t => t.key === state.selectedTemplate) || templates[0];
+  if (!selected) return;
+  const msg = selected.build(j, state.name);
+  logText(j.id, selected.key);
+  window.open(`sms:${j.contactPhone.replace(/\D/g,'')}?body=${encodeURIComponent(msg)}`, '_blank');
+  showToast(`💬 Text sent · ${selected.title}`);
+  closeModal();
+}
+
+function toggleDone(id) {
+  // If marking done while timer is running, stop it first
+  const log = state.contactLog[id];
+  if (!state.done.includes(id) && log && log.timerStart) {
+    const elapsed = Date.now() - log.timerStart;
+    log.timerEnd = Date.now();
+    log.totalTimeMs = (log.totalTimeMs || 0) + elapsed;
+    log.timerStart = null;
+    showToast(`⏱ ${formatDuration(elapsed)} logged`);
+  }
+  const done = state.done.includes(id)
+    ? state.done.filter(x => x !== id)
+    : [...state.done, id];
+  state.done = done;
+  saveData();
+  render();
+}
+
+function removeJob(id) {
+  state.jobs = state.jobs.filter(j => j.id !== id);
+  state.done = state.done.filter(x => x !== id);
+  delete state.contactLog[id];
+  saveData();
+  render();
+}
+
+function addYouMarker(map) {
+  if (window._youMarker) { window._youMarker.remove(); }
+  const youIcon = L.divIcon({
+    className: '',
+    html: `<div style="background:#ff4444;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px #ff4444,0 0 4px #fff;"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9]
+  });
+  window._youMarker = L.marker([state.userLat, state.userLng], {icon:youIcon}).addTo(map)
+    .bindPopup('<strong style="font-family:monospace;">📍 YOU ARE HERE</strong>');
+}
+
+function setClient(val) {
+  syncFormFromDOM();
+  state.form.client = val;
+  render();
+}
+
+function setPriority(val) {
+  syncFormFromDOM();
+  state.form.priority = val;
+  render();
+}
+
+function setAddMode(m) { state.addMode = m; state.bulkResult = null; render(); }
+function setBulkClient(c) { state.bulkClient = c; render(); }
+function importBulk() {
+  const ta = document.getElementById('bulk_text');
+  if (!ta) return;
+  const lines = ta.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const client = state.bulkClient;
+  const fi = isFI(client);
+  let added = 0;
+  const newJobs = [];
+  lines.forEach((line, i) => {
+    const parts = line.split('|').map(p=>p.trim());
+    const address = parts[0] || '';
+    if (!address) return;
+    let contactName = '', contactPhone = '', claimNumber = '';
+    if (fi) {
+      claimNumber = parts[1] || '';
+    } else {
+      contactName = parts[1] || '';
+      contactPhone = parts[2] || '';
+      claimNumber = parts[3] || '';
+    }
+    newJobs.push({
+      id: Date.now() + i,
+      address, client, contactName, contactPhone,
+      claimNumber: claimNumber || (client + '-' + (Date.now()+i)),
+      priority: 'medium'
+    });
+    added++;
+  });
+  state.jobs = [...state.jobs, ...newJobs];
+  state.bulkResult = added > 0 ? ('Added ' + added + ' job' + (added===1?'':'s') + '.') : 'No lines found. Check your paste.';
+  ta.value = '';
+  saveData();
+  render();
+}
+function addJob() {
+  syncFormFromDOM();
+  const f = state.form;
+  if (!f.address.trim()) { alert('Please enter an address'); return; }
+  if (!isFI(f.client) && !f.contactName.trim()) { alert('Please enter a contact name'); return; }
+  const newJob = {
+    ...f,
+    id: Date.now(),
+    claimNumber: f.claimNumber.trim() || `${f.client.slice(0,3).toUpperCase()}-${Date.now()}`
+  };
+  state.jobs = [...state.jobs, newJob];
+  state.form = { address:'', client:'Allstate', contactName:'', contactPhone:'', claimNumber:'', priority:'medium' };
+  state.tab = 'route';
+  state.optimized = false;
+  saveData();
+  render();
+  // Refresh travel time for the new job
+  if (state.userLat) refreshAllTravelTimes();
+}
+
+function renderMap() {
+  const pending = state.jobs.filter(j => !state.done.includes(j.id));
+  const locationStatus = state.userLat
+    ? `<div class="map-dot"></div><span style="color:var(--green)">LIVE — Location active</span>`
+    : `<div style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0;"></div><span style="color:var(--muted)">Locating you...</span>`;
+  return `
+    <div class="map-status" id="map-status-text">${locationStatus}
+      <span style="color:var(--muted);margin-left:auto;">${pending.length} stops pending</span>
+    </div>
+    <div id="map-container">
+      <div id="leaflet-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div class="map-legend">
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#ff4444;flex-shrink:0;"></div><span style="color:#fff">YOU</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#40c8ff;flex-shrink:0;"></div><span style="color:#40c8ff">Allstate</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#ffaa00;flex-shrink:0;"></div><span style="color:#ffaa00">Farmers</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#e040fb;flex-shrink:0;"></div><span style="color:#e040fb">FI-NC</span></div>
+      <div class="legend-item"><div style="width:12px;height:12px;border-radius:50%;background:#ffd54f;flex-shrink:0;"></div><span style="color:#ffd54f">FI-DH</span></div>
+    </div>`;
+}
+
+function openMapTab() {
+  state.tab = 'map';
+  render();
+  startGPS();
+  setTimeout(() => initLeafletMap(), 300);
+}
+
+function initLeafletMap() {
+  const mapEl = document.getElementById('leaflet-map');
+  if (!mapEl) return;
+  if (!window.L) {
+    if (!document.getElementById('leaflet-css')) {
+      const css = document.createElement('link');
+      css.id = 'leaflet-css';
+      css.rel = 'stylesheet';
+      css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(css);
+    }
+    if (!document.getElementById('leaflet-js')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      script.onload = () => buildMap();
+      document.head.appendChild(script);
+    }
+  } else {
+    buildMap();
+  }
+}
+
+function buildMap() {
+  const mapEl = document.getElementById('leaflet-map');
+  if (!mapEl || !window.L) return;
+  if (mapEl._leaflet_id) { mapEl._leaflet_id = null; mapEl.innerHTML = ''; }
+
+  const centerLat = state.userLat || 40.7608;
+  const centerLng = state.userLng || -111.8910;
+  const map = L.map('leaflet-map').setView([centerLat, centerLng], 12);
+  window._leafletMap = map;
+  window._youMarker = null;
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', maxZoom: 19
+  }).addTo(map);
+
+  const colorsMap = { Allstate:'#40c8ff', Farmers:'#ffaa00', 'FI-NC':'#e040fb', 'FI-DH':'#ffd54f' };
+
+  state.jobs.forEach((job, idx) => {
+    const isDone = state.done.includes(job.id);
+    const color = isDone ? '#555' : (colorsMap[job.client] || '#00ff88');
+    const label = isDone ? '✓' : String(idx+1);
+    geocodeAddress(job.address).then(coords => {
+      if (!coords) return;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:${color};color:#000;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.5);"><span style="transform:rotate(45deg)">${label}</span></div>`,
+        iconSize:[30,30], iconAnchor:[15,30]
+      });
+      const log = state.contactLog[job.id] || {};
+      const travelText = log.travelMin ? `<br>🚗 ${log.travelMin} min · ${log.travelMiles.toFixed(1)} mi from you` : '';
+      L.marker([coords.lat, coords.lng],{icon}).addTo(map).bindPopup(
+        `<div style="font-family:monospace;font-size:12px;min-width:180px;line-height:1.6;">
+          <strong style="color:${color}">${job.client}</strong><br>
+          ${job.address}<br>
+          <span style="color:#888">${job.claimNumber}</span>
+          ${job.contactName ? `<br>👤 ${job.contactName}` : ''}
+          ${travelText}
+          ${isDone ? '<br><span style="color:#00c853">✓ DONE</span>' : ''}
+        </div>`
+      );
+    });
+  });
+
+  if (state.userLat) {
+    addYouMarker(map);
+  }
+}
+
+render();
+initLocationServices();
+
+// Live timer tick - updates running timer chips every second without full re-render
+setInterval(() => {
+  state.jobs.forEach(job => {
+    const t = getTimerStatus(job.id);
+    if (t.running) {
+      const chip = document.getElementById(`timer-${job.id}`);
+      if (chip) chip.innerHTML = `⏱ ${formatDuration(t.totalMs)}`;
+    }
+  });
+}, 1000);
+
+// Re-render every minute so "time ago" labels stay fresh
+setInterval(() => {
+  if (state.tab === 'route' || state.tab === 'text') render();
+}, 60000);
 </script>
 
 </body>
